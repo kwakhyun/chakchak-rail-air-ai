@@ -1,0 +1,51 @@
+{
+  "name": "chakchak-rail-air-ai",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "CHAK² — arrival-aware Rail × Air journey recovery portfolio project",
+  "homepage": "https://chakchak-rail-air-2026.khyun97.chatgpt.site/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kwakhyun/chakchak-rail-air-ai.git"
+  },
+  "license": "MIT",
+  "scripts": {
+    "dev": "node server.mjs",
+    "start": "node server.mjs",
+    "build:sites": "node scripts/prepare-sites.mjs && WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext build",
+    "build:icons": "node scripts/build_chakchak_icons.mjs",
+    "train:model": "node scripts/train_chakchak_model.mjs",
+    "audit:model": "node scripts/audit_chakchak_model.mjs",
+    "benchmark:model": "node scripts/benchmark_chakchak_models.mjs",
+    "audit:real-world": "node scripts/audit_real_world_validation.mjs",
+    "probe:korail": "node scripts/probe-korail-train.mjs",
+    "pilot:status": "node scripts/pilot_ops.mjs status",
+    "pilot:issue": "node scripts/pilot_ops.mjs issue",
+    "pilot:phase": "node scripts/pilot_ops.mjs phase",
+    "pilot:export": "node scripts/pilot_ops.mjs export",
+    "test": "node --test",
+    "verify": "node scripts/verify.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@phosphor-icons/core": "^2.1.1",
+    "react": "19.2.6",
+    "react-dom": "19.2.6"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "1.37.1",
+    "@types/node": "22.19.19",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "^6.0.2",
+    "@vitejs/plugin-rsc": "^0.5.26",
+    "react-server-dom-webpack": "^19.2.6",
+    "typescript": "5.9.3",
+    "vinext": "1.0.0-beta.2",
+    "vite": "8.0.13",
+    "wrangler": "4.92.0"
+  }
+}

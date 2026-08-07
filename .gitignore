@@ -1,0 +1,35 @@
+.DS_Store
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+
+# Dependencies and build output
+node_modules/
+coverage/
+dist/
+.next/
+.wrangler/
+public/src/
+
+# Local runtime state
+runtime/
+tmp/
+.tmp/
+*.log
+
+# Private hackathon and document artifacts
+archive/
+output/
+*.hwp
+*.hwpx
+*.pdf
+*.docx
+*.pptx
+*서명*
+*사인*
+*도장*
+
+# Local portfolio workspace
+portfolio/

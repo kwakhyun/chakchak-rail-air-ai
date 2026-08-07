@@ -1,0 +1,1082 @@
+{
+  "schemaVersion": "1.0",
+  "auditId": "chakchak-four-method-comparison-2026-08-06",
+  "generatedAt": "2026-08-05T21:20:15.444Z",
+  "data": {
+    "datasetVersion": "chakchak-simulator-2026-08-v3-terminal-time",
+    "methodology": "SIMULATED_OBSERVATION_AND_MONTE_CARLO_REFERENCE",
+    "trainingRows": 2400,
+    "validationRows": 800,
+    "segments": {
+      "iid": 200,
+      "stress": 200,
+      "lowRisk": 200,
+      "accessibility": 200
+    },
+    "teacherSimulationsPerRow": 1200,
+    "realWorldLabels": 0
+  },
+  "metricDefinitions": {
+    "pinballLoss": "독립 시뮬레이션 관측 1건에 대한 분위수 손실(낮을수록 좋음)",
+    "observedMaeMinutes": "독립 시뮬레이션 관측과 예측의 절대 차이(분)",
+    "referenceMaeMinutes": "1,200회 Monte Carlo 참고 분위수와 예측 분위수의 절대 차이(분)",
+    "coverage": "독립 관측이 예측 분위수 이하에 포함된 비율"
+  },
+  "overall": {
+    "domainNormalBaseline": {
+      "label": "단순 시간·정규근사",
+      "quantiles": {
+        "p50": {
+          "rows": 800,
+          "pinballLoss": 16.8592,
+          "observedMaeMinutes": 33.718,
+          "referenceMaeMinutes": 9.97,
+          "coverage": 0.395,
+          "coverageGap": 0.105
+        },
+        "p90": {
+          "rows": 800,
+          "pinballLoss": 7.8595,
+          "observedMaeMinutes": 46.4,
+          "referenceMaeMinutes": 15.298,
+          "coverage": 0.8063,
+          "coverageGap": 0.0938
+        },
+        "p95": {
+          "rows": 800,
+          "pinballLoss": 4.7636,
+          "observedMaeMinutes": 56.886,
+          "referenceMaeMinutes": 19.228,
+          "coverage": 0.8863,
+          "coverageGap": 0.0637
+        }
+      },
+      "monotonicCrossingRate": 0
+    },
+    "monteCarloReference": {
+      "label": "Monte Carlo 참고분포",
+      "quantiles": {
+        "p50": {
+          "rows": 800,
+          "pinballLoss": 15.9948,
+          "observedMaeMinutes": 31.99,
+          "referenceMaeMinutes": 0,
+          "coverage": 0.485,
+          "coverageGap": 0.015
+        },
+        "p90": {
+          "rows": 800,
+          "pinballLoss": 7.1819,
+          "observedMaeMinutes": 57.242,
+          "referenceMaeMinutes": 0,
+          "coverage": 0.9125,
+          "coverageGap": 0.0125
+        },
+        "p95": {
+          "rows": 800,
+          "pinballLoss": 4.3904,
+          "observedMaeMinutes": 73.408,
+          "referenceMaeMinutes": 0,
+          "coverage": 0.9663,
+          "coverageGap": 0.0163
+        }
+      },
+      "monotonicCrossingRate": 0
+    },
+    "currentIsotonic": {
+      "label": "현재 단조 보정",
+      "quantiles": {
+        "p50": {
+          "rows": 800,
+          "pinballLoss": 16.2577,
+          "observedMaeMinutes": 32.515,
+          "referenceMaeMinutes": 4.106,
+          "coverage": 0.4875,
+          "coverageGap": 0.0125
+        },
+        "p90": {
+          "rows": 800,
+          "pinballLoss": 7.184,
+          "observedMaeMinutes": 57.17,
+          "referenceMaeMinutes": 4.721,
+          "coverage": 0.905,
+          "coverageGap": 0.005
+        },
+        "p95": {
+          "rows": 800,
+          "pinballLoss": 4.3462,
+          "observedMaeMinutes": 73.181,
+          "referenceMaeMinutes": 5.191,
+          "coverage": 0.965,
+          "coverageGap": 0.015
+        }
+      },
+      "monotonicCrossingRate": 0
+    },
+    "monotonicQuantileGbdt": {
+      "label": "신규 Monotonic Quantile GBDT",
+      "quantiles": {
+        "p50": {
+          "rows": 800,
+          "pinballLoss": 15.9671,
+          "observedMaeMinutes": 31.934,
+          "referenceMaeMinutes": 2.88,
+          "coverage": 0.4925,
+          "coverageGap": 0.0075
+        },
+        "p90": {
+          "rows": 800,
+          "pinballLoss": 7.1461,
+          "observedMaeMinutes": 57.947,
+          "referenceMaeMinutes": 3.798,
+          "coverage": 0.9163,
+          "coverageGap": 0.0162
+        },
+        "p95": {
+          "rows": 800,
+          "pinballLoss": 4.4293,
+          "observedMaeMinutes": 76.258,
+          "referenceMaeMinutes": 5.893,
+          "coverage": 0.9725,
+          "coverageGap": 0.0225
+        }
+      },
+      "monotonicCrossingRate": 0
+    }
+  },
+  "segments": {
+    "iid": {
+      "domainNormalBaseline": {
+        "label": "단순 시간·정규근사",
+        "quantiles": {
+          "p50": {
+            "rows": 200,
+            "pinballLoss": 17.6728,
+            "observedMaeMinutes": 35.346,
+            "referenceMaeMinutes": 9.071,
+            "coverage": 0.455,
+            "coverageGap": 0.045
+          },
+          "p90": {
+            "rows": 200,
+            "pinballLoss": 7.9115,
+            "observedMaeMinutes": 50.203,
+            "referenceMaeMinutes": 14.343,
+            "coverage": 0.82,
+            "coverageGap": 0.08
+          },
+          "p95": {
+            "rows": 200,
+            "pinballLoss": 4.5338,
+            "observedMaeMinutes": 60.956,
+            "referenceMaeMinutes": 18.764,
+            "coverage": 0.9,
+            "coverageGap": 0.05
+          }
+        },
+        "monotonicCrossingRate": 0
+      },
+      "monteCarloReference": {
+        "label": "Monte Carlo 참고분포",
+        "quantiles": {
+          "p50": {
+            "rows": 200,
+            "pinballLoss": 17.16,
+            "observedMaeMinutes": 34.32,
+            "referenceMaeMinutes": 0,
+            "coverage": 0.51,
+            "coverageGap": 0.01
+          },
+          "p90": {
+            "rows": 200,
+            "pinballLoss": 7.3645,
+            "observedMaeMinutes": 60.52,
+            "referenceMaeMinutes": 0,
+            "coverage": 0.91,
+            "coverageGap": 0.01
+          },
+          "p95": {
+            "rows": 200,
+            "pinballLoss": 4.4169,
+            "observedMaeMinutes": 77.609,
+            "referenceMaeMinutes": 0,
+            "coverage": 0.975,
+            "coverageGap": 0.025
+          }
+        },
+        "monotonicCrossingRate": 0
+      },
+      "currentIsotonic": {
+        "label": "현재 단조 보정",
+        "quantiles": {
+          "p50": {
+            "rows": 200,
+            "pinballLoss": 17.5743,
+            "observedMaeMinutes": 35.149,
+            "referenceMaeMinutes": 4.316,
+            "coverage": 0.515,
+            "coverageGap": 0.015
+          },
+          "p90": {
+            "rows": 200,
+            "pinballLoss": 7.3642,
+            "observedMaeMinutes": 61.632,
+            "referenceMaeMinutes": 4.998,
+            "coverage": 0.91,
+            "coverageGap": 0.01
+          },
+          "p95": {
+            "rows": 200,
+            "pinballLoss": 4.4045,
+            "observedMaeMinutes": 78.636,
+            "referenceMaeMinutes": 5.57,
+            "coverage": 0.97,
+            "coverageGap": 0.02
+          }
+        },
+        "monotonicCrossingRate": 0
+      },
+      "monotonicQuantileGbdt": {
+        "label": "신규 Monotonic Quantile GBDT",
+        "quantiles": {
+          "p50": {
+            "rows": 200,
+            "pinballLoss": 17.1743,
+            "observedMaeMinutes": 34.349,
+            "referenceMaeMinutes": 2.178,
+            "coverage": 0.505,
+            "coverageGap": 0.005
+          },
+          "p90": {
+            "rows": 200,
+            "pinballLoss": 7.3491,
+            "observedMaeMinutes": 61.715,
+            "referenceMaeMinutes": 4.275,
+            "coverage": 0.91,
+            "coverageGap": 0.01
+          },
+          "p95": {
+            "rows": 200,
+            "pinballLoss": 4.5399,
+            "observedMaeMinutes": 80.952,
+            "referenceMaeMinutes": 6.524,
+            "coverage": 0.985,
+            "coverageGap": 0.035
+          }
+        },
+        "monotonicCrossingRate": 0
+      }
+    },
+    "stress": {
+      "domainNormalBaseline": {
+        "label": "단순 시간·정규근사",
+        "quantiles": {
+          "p50": {
+            "rows": 200,
+            "pinballLoss": 22.015,
+            "observedMaeMinutes": 44.03,
+            "referenceMaeMinutes": 10.977,
+            "coverage": 0.39,
+            "coverageGap": 0.11
+          },
+          "p90": {
+            "rows": 200,
+            "pinballLoss": 9.6893,
+            "observedMaeMinutes": 62.673,
+            "referenceMaeMinutes": 15.698,
+            "coverage": 0.82,
+            "coverageGap": 0.08
+          },
+          "p95": {
+            "rows": 200,
+            "pinballLoss": 5.6222,
+            "observedMaeMinutes": 77.544,
+            "referenceMaeMinutes": 18.988,
+            "coverage": 0.915,
+            "coverageGap": 0.035
+          }
+        },
+        "monotonicCrossingRate": 0
+      },
+      "monteCarloReference": {
+        "label": "Monte Carlo 참고분포",
+        "quantiles": {
+          "p50": {
+            "rows": 200,
+            "pinballLoss": 21.0692,
+            "observedMaeMinutes": 42.138,
+            "referenceMaeMinutes": 0,
+            "coverage": 0.45,
+            "coverageGap": 0.05
+          },
+          "p90": {
+            "rows": 200,
+            "pinballLoss": 9.2092,
+            "observedMaeMinutes": 74.176,
+            "referenceMaeMinutes": 0,
+            "coverage": 0.9,
+            "coverageGap": 0
+          },
+          "p95": {
+            "rows": 200,
+            "pinballLoss": 5.521,
+            "observedMaeMinutes": 94.282,
+            "referenceMaeMinutes": 0,
+            "coverage": 0.96,
+            "coverageGap": 0.01
+          }
+        },
+        "monotonicCrossingRate": 0
+      },
+      "currentIsotonic": {
+        "label": "현재 단조 보정",
+        "quantiles": {
+          "p50": {
+            "rows": 200,
+            "pinballLoss": 21.2813,
+            "observedMaeMinutes": 42.563,
+            "referenceMaeMinutes": 4.21,
+            "coverage": 0.475,
+            "coverageGap": 0.025
+          },
+          "p90": {
+            "rows": 200,
+            "pinballLoss": 9.0307,
+            "observedMaeMinutes": 72.359,
+            "referenceMaeMinutes": 4.762,
+            "coverage": 0.905,
+            "coverageGap": 0.005
+          },
+          "p95": {
+            "rows": 200,
+            "pinballLoss": 5.3632,
+            "observedMaeMinutes": 92.205,
+            "referenceMaeMinutes": 5.117,
+            "coverage": 0.96,
+            "coverageGap": 0.01
+          }
+        },
+        "monotonicCrossingRate": 0
+      },
+      "monotonicQuantileGbdt": {
+        "label": "신규 Monotonic Quantile GBDT",
+        "quantiles": {
+          "p50": {
+            "rows": 200,
+            "pinballLoss": 20.9798,
+            "observedMaeMinutes": 41.96,
+            "referenceMaeMinutes": 3.868,
+            "coverage": 0.48,
+            "coverageGap": 0.02
+          },
+          "p90": {
+            "rows": 200,
+            "pinballLoss": 9.012,
+            "observedMaeMinutes": 74.282,
+            "referenceMaeMinutes": 3.639,
+            "coverage": 0.905,
+            "coverageGap": 0.005
+          },
+          "p95": {
+            "rows": 200,
+            "pinballLoss": 5.5344,
+            "observedMaeMinutes": 99.612,
+            "referenceMaeMinutes": 6.853,
+            "coverage": 0.97,
+            "coverageGap": 0.02
+          }
+        },
+        "monotonicCrossingRate": 0
+      }
+    },
+    "lowRisk": {
+      "domainNormalBaseline": {
+        "label": "단순 시간·정규근사",
+        "quantiles": {
+          "p50": {
+            "rows": 200,
+            "pinballLoss": 9.8174,
+            "observedMaeMinutes": 19.635,
+            "referenceMaeMinutes": 10.285,
+            "coverage": 0.36,
+            "coverageGap": 0.14
+          },
+          "p90": {
+            "rows": 200,
+            "pinballLoss": 5.7076,
+            "observedMaeMinutes": 22.524,
+            "referenceMaeMinutes": 15.605,
+            "coverage": 0.73,
+            "coverageGap": 0.17
+          },
+          "p95": {
+            "rows": 200,
+            "pinballLoss": 3.6837,
+            "observedMaeMinutes": 26.363,
+            "referenceMaeMinutes": 19.415,
+            "coverage": 0.8,
+            "coverageGap": 0.15
+          }
+        },
+        "monotonicCrossingRate": 0
+      },
+      "monteCarloReference": {
+        "label": "Monte Carlo 참고분포",
+        "quantiles": {
+          "p50": {
+            "rows": 200,
+            "pinballLoss": 8.93,
+            "observedMaeMinutes": 17.86,
+            "referenceMaeMinutes": 0,
+            "coverage": 0.52,
+            "coverageGap": 0.02
+          },
+          "p90": {
+            "rows": 200,
+            "pinballLoss": 4.0384,
+            "observedMaeMinutes": 31.663,
+            "referenceMaeMinutes": 0,
+            "coverage": 0.905,
+            "coverageGap": 0.005
+          },
+          "p95": {
+            "rows": 200,
+            "pinballLoss": 2.4311,
+            "observedMaeMinutes": 41.331,
+            "referenceMaeMinutes": 0,
+            "coverage": 0.965,
+            "coverageGap": 0.015
+          }
+        },
+        "monotonicCrossingRate": 0
+      },
+      "currentIsotonic": {
+        "label": "현재 단조 보정",
+        "quantiles": {
+          "p50": {
+            "rows": 200,
+            "pinballLoss": 9.1734,
+            "observedMaeMinutes": 18.347,
+            "referenceMaeMinutes": 3.975,
+            "coverage": 0.5,
+            "coverageGap": 0
+          },
+          "p90": {
+            "rows": 200,
+            "pinballLoss": 4.1985,
+            "observedMaeMinutes": 31.965,
+            "referenceMaeMinutes": 4.944,
+            "coverage": 0.875,
+            "coverageGap": 0.025
+          },
+          "p95": {
+            "rows": 200,
+            "pinballLoss": 2.4895,
+            "observedMaeMinutes": 41.415,
+            "referenceMaeMinutes": 5.45,
+            "coverage": 0.965,
+            "coverageGap": 0.015
+          }
+        },
+        "monotonicCrossingRate": 0
+      },
+      "monotonicQuantileGbdt": {
+        "label": "신규 Monotonic Quantile GBDT",
+        "quantiles": {
+          "p50": {
+            "rows": 200,
+            "pinballLoss": 8.889,
+            "observedMaeMinutes": 17.778,
+            "referenceMaeMinutes": 1.607,
+            "coverage": 0.495,
+            "coverageGap": 0.005
+          },
+          "p90": {
+            "rows": 200,
+            "pinballLoss": 4.1203,
+            "observedMaeMinutes": 33.967,
+            "referenceMaeMinutes": 3.265,
+            "coverage": 0.915,
+            "coverageGap": 0.015
+          },
+          "p95": {
+            "rows": 200,
+            "pinballLoss": 2.4303,
+            "observedMaeMinutes": 43.215,
+            "referenceMaeMinutes": 4.613,
+            "coverage": 0.97,
+            "coverageGap": 0.02
+          }
+        },
+        "monotonicCrossingRate": 0
+      }
+    },
+    "accessibility": {
+      "domainNormalBaseline": {
+        "label": "단순 시간·정규근사",
+        "quantiles": {
+          "p50": {
+            "rows": 200,
+            "pinballLoss": 17.9317,
+            "observedMaeMinutes": 35.863,
+            "referenceMaeMinutes": 9.546,
+            "coverage": 0.375,
+            "coverageGap": 0.125
+          },
+          "p90": {
+            "rows": 200,
+            "pinballLoss": 8.1295,
+            "observedMaeMinutes": 50.199,
+            "referenceMaeMinutes": 15.547,
+            "coverage": 0.855,
+            "coverageGap": 0.045
+          },
+          "p95": {
+            "rows": 200,
+            "pinballLoss": 5.2145,
+            "observedMaeMinutes": 62.681,
+            "referenceMaeMinutes": 19.745,
+            "coverage": 0.93,
+            "coverageGap": 0.02
+          }
+        },
+        "monotonicCrossingRate": 0
+      },
+      "monteCarloReference": {
+        "label": "Monte Carlo 참고분포",
+        "quantiles": {
+          "p50": {
+            "rows": 200,
+            "pinballLoss": 16.8197,
+            "observedMaeMinutes": 33.639,
+            "referenceMaeMinutes": 0,
+            "coverage": 0.46,
+            "coverageGap": 0.04
+          },
+          "p90": {
+            "rows": 200,
+            "pinballLoss": 8.1157,
+            "observedMaeMinutes": 62.609,
+            "referenceMaeMinutes": 0,
+            "coverage": 0.935,
+            "coverageGap": 0.035
+          },
+          "p95": {
+            "rows": 200,
+            "pinballLoss": 5.1927,
+            "observedMaeMinutes": 80.408,
+            "referenceMaeMinutes": 0,
+            "coverage": 0.965,
+            "coverageGap": 0.015
+          }
+        },
+        "monotonicCrossingRate": 0
+      },
+      "currentIsotonic": {
+        "label": "현재 단조 보정",
+        "quantiles": {
+          "p50": {
+            "rows": 200,
+            "pinballLoss": 17.0019,
+            "observedMaeMinutes": 34.004,
+            "referenceMaeMinutes": 3.921,
+            "coverage": 0.46,
+            "coverageGap": 0.04
+          },
+          "p90": {
+            "rows": 200,
+            "pinballLoss": 8.1428,
+            "observedMaeMinutes": 62.725,
+            "referenceMaeMinutes": 4.181,
+            "coverage": 0.93,
+            "coverageGap": 0.03
+          },
+          "p95": {
+            "rows": 200,
+            "pinballLoss": 5.1276,
+            "observedMaeMinutes": 80.471,
+            "referenceMaeMinutes": 4.625,
+            "coverage": 0.965,
+            "coverageGap": 0.015
+          }
+        },
+        "monotonicCrossingRate": 0
+      },
+      "monotonicQuantileGbdt": {
+        "label": "신규 Monotonic Quantile GBDT",
+        "quantiles": {
+          "p50": {
+            "rows": 200,
+            "pinballLoss": 16.8251,
+            "observedMaeMinutes": 33.65,
+            "referenceMaeMinutes": 3.868,
+            "coverage": 0.49,
+            "coverageGap": 0.01
+          },
+          "p90": {
+            "rows": 200,
+            "pinballLoss": 8.1032,
+            "observedMaeMinutes": 61.822,
+            "referenceMaeMinutes": 4.013,
+            "coverage": 0.935,
+            "coverageGap": 0.035
+          },
+          "p95": {
+            "rows": 200,
+            "pinballLoss": 5.2128,
+            "observedMaeMinutes": 81.252,
+            "referenceMaeMinutes": 5.581,
+            "coverage": 0.965,
+            "coverageGap": 0.015
+          }
+        },
+        "monotonicCrossingRate": 0
+      }
+    }
+  },
+  "calibration": {
+    "domainNormalBaseline": {
+      "p50": [
+        {
+          "terminal": "T1",
+          "hourGroup": "PEAK",
+          "rows": 266,
+          "covered": 123,
+          "coverage": 0.4624,
+          "target": 0.5
+        },
+        {
+          "terminal": "T2",
+          "hourGroup": "PEAK",
+          "rows": 419,
+          "covered": 144,
+          "coverage": 0.3437,
+          "target": 0.5
+        },
+        {
+          "terminal": "T2",
+          "hourGroup": "OFF_PEAK",
+          "rows": 75,
+          "covered": 31,
+          "coverage": 0.4133,
+          "target": 0.5
+        },
+        {
+          "terminal": "T1",
+          "hourGroup": "OFF_PEAK",
+          "rows": 40,
+          "covered": 18,
+          "coverage": 0.45,
+          "target": 0.5
+        }
+      ],
+      "p90": [
+        {
+          "terminal": "T1",
+          "hourGroup": "PEAK",
+          "rows": 266,
+          "covered": 227,
+          "coverage": 0.8534,
+          "target": 0.9
+        },
+        {
+          "terminal": "T2",
+          "hourGroup": "PEAK",
+          "rows": 419,
+          "covered": 325,
+          "coverage": 0.7757,
+          "target": 0.9
+        },
+        {
+          "terminal": "T2",
+          "hourGroup": "OFF_PEAK",
+          "rows": 75,
+          "covered": 59,
+          "coverage": 0.7867,
+          "target": 0.9
+        },
+        {
+          "terminal": "T1",
+          "hourGroup": "OFF_PEAK",
+          "rows": 40,
+          "covered": 34,
+          "coverage": 0.85,
+          "target": 0.9
+        }
+      ],
+      "p95": [
+        {
+          "terminal": "T1",
+          "hourGroup": "PEAK",
+          "rows": 266,
+          "covered": 245,
+          "coverage": 0.9211,
+          "target": 0.95
+        },
+        {
+          "terminal": "T2",
+          "hourGroup": "PEAK",
+          "rows": 419,
+          "covered": 361,
+          "coverage": 0.8616,
+          "target": 0.95
+        },
+        {
+          "terminal": "T2",
+          "hourGroup": "OFF_PEAK",
+          "rows": 75,
+          "covered": 67,
+          "coverage": 0.8933,
+          "target": 0.95
+        },
+        {
+          "terminal": "T1",
+          "hourGroup": "OFF_PEAK",
+          "rows": 40,
+          "covered": 36,
+          "coverage": 0.9,
+          "target": 0.95
+        }
+      ]
+    },
+    "monteCarloReference": {
+      "p50": [
+        {
+          "terminal": "T1",
+          "hourGroup": "PEAK",
+          "rows": 266,
+          "covered": 149,
+          "coverage": 0.5602,
+          "target": 0.5
+        },
+        {
+          "terminal": "T2",
+          "hourGroup": "PEAK",
+          "rows": 419,
+          "covered": 189,
+          "coverage": 0.4511,
+          "target": 0.5
+        },
+        {
+          "terminal": "T2",
+          "hourGroup": "OFF_PEAK",
+          "rows": 75,
+          "covered": 32,
+          "coverage": 0.4267,
+          "target": 0.5
+        },
+        {
+          "terminal": "T1",
+          "hourGroup": "OFF_PEAK",
+          "rows": 40,
+          "covered": 18,
+          "coverage": 0.45,
+          "target": 0.5
+        }
+      ],
+      "p90": [
+        {
+          "terminal": "T1",
+          "hourGroup": "PEAK",
+          "rows": 266,
+          "covered": 246,
+          "coverage": 0.9248,
+          "target": 0.9
+        },
+        {
+          "terminal": "T2",
+          "hourGroup": "PEAK",
+          "rows": 419,
+          "covered": 386,
+          "coverage": 0.9212,
+          "target": 0.9
+        },
+        {
+          "terminal": "T2",
+          "hourGroup": "OFF_PEAK",
+          "rows": 75,
+          "covered": 64,
+          "coverage": 0.8533,
+          "target": 0.9
+        },
+        {
+          "terminal": "T1",
+          "hourGroup": "OFF_PEAK",
+          "rows": 40,
+          "covered": 34,
+          "coverage": 0.85,
+          "target": 0.9
+        }
+      ],
+      "p95": [
+        {
+          "terminal": "T1",
+          "hourGroup": "PEAK",
+          "rows": 266,
+          "covered": 258,
+          "coverage": 0.9699,
+          "target": 0.95
+        },
+        {
+          "terminal": "T2",
+          "hourGroup": "PEAK",
+          "rows": 419,
+          "covered": 406,
+          "coverage": 0.969,
+          "target": 0.95
+        },
+        {
+          "terminal": "T2",
+          "hourGroup": "OFF_PEAK",
+          "rows": 75,
+          "covered": 72,
+          "coverage": 0.96,
+          "target": 0.95
+        },
+        {
+          "terminal": "T1",
+          "hourGroup": "OFF_PEAK",
+          "rows": 40,
+          "covered": 37,
+          "coverage": 0.925,
+          "target": 0.95
+        }
+      ]
+    },
+    "currentIsotonic": {
+      "p50": [
+        {
+          "terminal": "T1",
+          "hourGroup": "PEAK",
+          "rows": 266,
+          "covered": 156,
+          "coverage": 0.5865,
+          "target": 0.5
+        },
+        {
+          "terminal": "T2",
+          "hourGroup": "PEAK",
+          "rows": 419,
+          "covered": 176,
+          "coverage": 0.42,
+          "target": 0.5
+        },
+        {
+          "terminal": "T2",
+          "hourGroup": "OFF_PEAK",
+          "rows": 75,
+          "covered": 35,
+          "coverage": 0.4667,
+          "target": 0.5
+        },
+        {
+          "terminal": "T1",
+          "hourGroup": "OFF_PEAK",
+          "rows": 40,
+          "covered": 23,
+          "coverage": 0.575,
+          "target": 0.5
+        }
+      ],
+      "p90": [
+        {
+          "terminal": "T1",
+          "hourGroup": "PEAK",
+          "rows": 266,
+          "covered": 249,
+          "coverage": 0.9361,
+          "target": 0.9
+        },
+        {
+          "terminal": "T2",
+          "hourGroup": "PEAK",
+          "rows": 419,
+          "covered": 372,
+          "coverage": 0.8878,
+          "target": 0.9
+        },
+        {
+          "terminal": "T2",
+          "hourGroup": "OFF_PEAK",
+          "rows": 75,
+          "covered": 67,
+          "coverage": 0.8933,
+          "target": 0.9
+        },
+        {
+          "terminal": "T1",
+          "hourGroup": "OFF_PEAK",
+          "rows": 40,
+          "covered": 36,
+          "coverage": 0.9,
+          "target": 0.9
+        }
+      ],
+      "p95": [
+        {
+          "terminal": "T1",
+          "hourGroup": "PEAK",
+          "rows": 266,
+          "covered": 259,
+          "coverage": 0.9737,
+          "target": 0.95
+        },
+        {
+          "terminal": "T2",
+          "hourGroup": "PEAK",
+          "rows": 419,
+          "covered": 403,
+          "coverage": 0.9618,
+          "target": 0.95
+        },
+        {
+          "terminal": "T2",
+          "hourGroup": "OFF_PEAK",
+          "rows": 75,
+          "covered": 72,
+          "coverage": 0.96,
+          "target": 0.95
+        },
+        {
+          "terminal": "T1",
+          "hourGroup": "OFF_PEAK",
+          "rows": 40,
+          "covered": 38,
+          "coverage": 0.95,
+          "target": 0.95
+        }
+      ]
+    },
+    "monotonicQuantileGbdt": {
+      "p50": [
+        {
+          "terminal": "T1",
+          "hourGroup": "PEAK",
+          "rows": 266,
+          "covered": 150,
+          "coverage": 0.5639,
+          "target": 0.5
+        },
+        {
+          "terminal": "T2",
+          "hourGroup": "PEAK",
+          "rows": 419,
+          "covered": 191,
+          "coverage": 0.4558,
+          "target": 0.5
+        },
+        {
+          "terminal": "T2",
+          "hourGroup": "OFF_PEAK",
+          "rows": 75,
+          "covered": 34,
+          "coverage": 0.4533,
+          "target": 0.5
+        },
+        {
+          "terminal": "T1",
+          "hourGroup": "OFF_PEAK",
+          "rows": 40,
+          "covered": 19,
+          "coverage": 0.475,
+          "target": 0.5
+        }
+      ],
+      "p90": [
+        {
+          "terminal": "T1",
+          "hourGroup": "PEAK",
+          "rows": 266,
+          "covered": 246,
+          "coverage": 0.9248,
+          "target": 0.9
+        },
+        {
+          "terminal": "T2",
+          "hourGroup": "PEAK",
+          "rows": 419,
+          "covered": 385,
+          "coverage": 0.9189,
+          "target": 0.9
+        },
+        {
+          "terminal": "T2",
+          "hourGroup": "OFF_PEAK",
+          "rows": 75,
+          "covered": 67,
+          "coverage": 0.8933,
+          "target": 0.9
+        },
+        {
+          "terminal": "T1",
+          "hourGroup": "OFF_PEAK",
+          "rows": 40,
+          "covered": 35,
+          "coverage": 0.875,
+          "target": 0.9
+        }
+      ],
+      "p95": [
+        {
+          "terminal": "T1",
+          "hourGroup": "PEAK",
+          "rows": 266,
+          "covered": 259,
+          "coverage": 0.9737,
+          "target": 0.95
+        },
+        {
+          "terminal": "T2",
+          "hourGroup": "PEAK",
+          "rows": 419,
+          "covered": 409,
+          "coverage": 0.9761,
+          "target": 0.95
+        },
+        {
+          "terminal": "T2",
+          "hourGroup": "OFF_PEAK",
+          "rows": 75,
+          "covered": 72,
+          "coverage": 0.96,
+          "target": 0.95
+        },
+        {
+          "terminal": "T1",
+          "hourGroup": "OFF_PEAK",
+          "rows": 40,
+          "covered": 38,
+          "coverage": 0.95,
+          "target": 0.95
+        }
+      ]
+    }
+  },
+  "comparison": {
+    "p50": {
+      "gbdtPinballVsBaselineImprovement": 0.0529,
+      "gbdtPinballVsCurrentImprovement": 0.0179,
+      "gbdtReferenceMaeVsBaselineImprovement": 0.7111,
+      "gbdtReferenceMaeVsCurrentImprovement": 0.2986,
+      "gbdtCoverage": 0.4925,
+      "targetCoverage": 0.5
+    },
+    "p90": {
+      "gbdtPinballVsBaselineImprovement": 0.0908,
+      "gbdtPinballVsCurrentImprovement": 0.0053,
+      "gbdtReferenceMaeVsBaselineImprovement": 0.7517,
+      "gbdtReferenceMaeVsCurrentImprovement": 0.1955,
+      "gbdtCoverage": 0.9163,
+      "targetCoverage": 0.9
+    },
+    "p95": {
+      "gbdtPinballVsBaselineImprovement": 0.0702,
+      "gbdtPinballVsCurrentImprovement": -0.0191,
+      "gbdtReferenceMaeVsBaselineImprovement": 0.6935,
+      "gbdtReferenceMaeVsCurrentImprovement": -0.1352,
+      "gbdtCoverage": 0.9725,
+      "targetCoverage": 0.95
+    }
+  },
+  "caveat": "모든 수치는 터미널·시간대를 포함한 시뮬레이션 비교이며 실제 승객 운영 성능이 아닙니다."
+}

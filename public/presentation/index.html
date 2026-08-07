@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="착착(CHAK²) 내일路 해커톤 2026 온라인 예선 인터랙티브 발표"
+    />
+    <meta name="theme-color" content="#f4fafd" />
+    <link rel="icon" href="/assets/brand/chakchak-logo-app.png" type="image/png" />
+    <link rel="stylesheet" href="/presentation/presentation.css?v=20260806-ticket12" />
+    <script type="module" src="/presentation/presentation.js?v=20260806-ticket12"></script>
+    <title>착착 CHAK² · 온라인 예선 발표</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#deck">발표 내용으로 바로가기</a>
+
+    <div class="ambient" aria-hidden="true">
+      <span class="ambient-orb ambient-orb--sky"></span>
+      <span class="ambient-orb ambient-orb--teal"></span>
+      <span class="ambient-route"></span>
+    </div>
+
+    <header class="deck-chrome" aria-label="발표 조작 영역">
+      <a class="deck-brand" href="/" aria-label="착착 서비스로 이동">
+        <img src="/assets/brand/chakchak-logo-app.png" alt="" aria-hidden="true" />
+        <span>
+          <strong>착착 CHAK²</strong>
+          <small>내일路 해커톤 2026 온라인 예선</small>
+        </span>
+      </a>
+      <div class="deck-progress" aria-hidden="true">
+        <span id="deck-progress-bar"></span>
+      </div>
+      <div class="deck-meta">
+        <span id="deck-step-label">01 / 07</span>
+        <button class="icon-button" id="notes-button" type="button" aria-label="발표자 메모 열기" aria-pressed="false">N</button>
+        <button class="icon-button" id="fullscreen-button" type="button" aria-label="전체 화면으로 보기">⌗</button>
+        <button class="icon-button" id="help-button" type="button" aria-label="조작 방법 보기">?</button>
+      </div>
+    </header>
+
+    <main class="presentation-stage" id="deck" tabindex="-1" aria-label="착착 온라인 예선 발표">
+      <section
+        class="slide slide--hero is-active"
+        data-title="착륙에서 착석까지, 여행이 착착"
+        data-notes="안녕하세요. 항공 도착부터 실제로 탈 수 있는 열차와 지역 여행까지 한 번에 연결하는 AI 이동 도우미, 착착을 만든 곽현입니다. 착착은 ‘착륙에서 착석까지’ 끊기지 않는 여행을 목표로 합니다."
+        aria-label="1. 착착 소개"
+      >
+        <div class="hero-copy">
+          <p class="eyebrow reveal" data-reveal="0">철도×항공 데이터 융합 AI 서비스</p>
+          <h1 class="reveal" data-reveal="0">착륙에서 착석까지,<br /><em>여행이 착착</em></h1>
+          <p class="hero-lead reveal" data-reveal="1">
+            항공 도착부터 실제로 탈 수 있는 다음 열차와<br />지역여행까지 한 번에 이어 주는 AI 이동 도우미
+          </p>
+          <div class="hero-presenter reveal" data-reveal="1">
+            <span>발표자</span><strong>곽현</strong>
+          </div>
+        </div>
+        <div class="hero-visual reveal" data-reveal="2">
+          <img src="/assets/illustrations/rail-air-journey-3d.png" alt="공항에서 공항철도와 KTX를 거쳐 지역 관광지까지 이어지는 여정" />
+          <div class="journey-signal journey-signal--flight">항공 도착</div>
+          <div class="journey-signal journey-signal--rail">철도 연결</div>
+          <div class="journey-signal journey-signal--travel">지역 여행</div>
+        </div>
+      </section>
+
+      <section
+        class="slide"
+        data-title="비행기 도착 시각과 열차를 탈 수 있는 시각은 다릅니다"
+        data-notes="비행기가 도착했다고 바로 열차를 탈 수 있는 것은 아닙니다. 입국심사와 짐 찾기, 터미널 이동이 남아 있고 사람과 상황마다 걸리는 시간도 다릅니다. 그래서 가장 빠른 열차가 실제로 탈 수 있는 열차와는 다를 수 있습니다."
+        aria-label="2. 문제"
+      >
+        <header class="slide-heading reveal" data-reveal="0">
+          <p class="eyebrow">문제</p>
+          <h2>비행기 도착 시각과 <em>열차를 탈 수 있는 시각</em>은 다릅니다</h2>
+        </header>
+        <div class="problem-chain">
+          <article class="problem-node reveal" data-reveal="1">
+            <img src="/assets/icons/chakchak/signal-flight.svg" alt="" />
+            <h3>항공편은 도착했지만</h3>
+            <p>항공기 하기·입국심사·수하물 수취 시간은<br />여행자마다 다릅니다.</p>
+          </article>
+          <span class="chain-arrow reveal" data-reveal="2" aria-hidden="true">→</span>
+          <article class="problem-node reveal" data-reveal="2">
+            <img src="/assets/icons/chakchak/signal-immigration.svg" alt="" />
+            <h3>승강장으로 이동하는 동안</h3>
+            <p>입국장 혼잡과 날씨가 바뀌면<br />도착 예상시간도 달라집니다.</p>
+          </article>
+          <span class="chain-arrow reveal" data-reveal="3" aria-hidden="true">→</span>
+          <article class="problem-node reveal" data-reveal="3">
+            <img src="/assets/icons/chakchak/route-ktx.svg" alt="" />
+            <h3>열차를 놓치면</h3>
+            <p>KTX 환승뿐 아니라<br />숙소와 관광 일정까지 연쇄적으로 바뀝니다.</p>
+          </article>
+        </div>
+        <div class="statement-banner reveal" data-reveal="4">
+          <span>지금 필요한 것은 가장 빠른 열차가 아니라</span>
+          <strong>내가 실제로 탑승할 수 있는 연결 여정입니다</strong>
+        </div>
+      </section>
+
+      <section
+        class="slide"
+        data-title="서로 다른 이동 신호를 하나의 판단으로 연결합니다"
+        data-notes="착착은 항공 도착과 터미널, 입국장 혼잡, 날씨, 공항철도와 KTX, 개인 이동조건을 하나의 시간 흐름으로 합칩니다. 자체 예측 AI는 승강장에 보통 도착할 시각과 많이 늦는 경우, 그리고 열차별 탑승 가능성을 함께 계산합니다. 그 결과를 탈 수 있는 열차, 다시 연결된 여행 일정, 추천이 바뀐 이유로 보여 줍니다. 생성형 AI는 계산을 바꾸지 않고 이 결과를 쉽게 설명하는 역할만 맡습니다."
+        aria-label="3. 해결"
+      >
+        <header class="slide-heading reveal" data-reveal="0">
+          <p class="eyebrow">데이터 융합 AI 설계</p>
+          <h2>서로 다른 이동 신호를 <em>하나의 판단</em>으로 연결합니다</h2>
+        </header>
+        <div class="fusion-architecture reveal" data-reveal="1">
+          <div class="fusion-sources" aria-label="착착이 연결하는 입력 정보">
+            <article><img src="/assets/icons/chakchak/signal-flight.svg" alt="" /><span>항공 도착</span><small>변경 시각·터미널</small></article>
+            <article><img src="/assets/icons/chakchak/signal-immigration.svg" alt="" /><span>입국장</span><small>혼잡·수하물</small></article>
+            <article><img src="/assets/icons/chakchak/signal-weather.svg" alt="" /><span>공항 날씨</span><small>비·바람</small></article>
+            <article><img src="/assets/icons/chakchak/signal-airport-rail.svg" alt="" /><span>철도</span><small>공항철도·KTX</small></article>
+            <article><img src="/assets/icons/chakchak/reason-mobility.svg" alt="" /><span>나의 조건</span><small>짐·이동 지원</small></article>
+          </div>
+          <article class="fusion-core" aria-label="착착 자체 AI">
+            <div class="fusion-core-brand"><img src="/assets/brand/chakchak-logo-app.png" alt="" /><div><span>착착 Connection AI</span><strong>같은 시간축으로 융합</strong></div></div>
+            <div class="fusion-core-model">
+              <div><span>승강장 도착</span><strong>P50</strong><small>보통 도착</small></div>
+              <div><span>늦는 경우</span><strong>P90·P95</strong><small>불확실성 반영</small></div>
+              <div><span>열차별 판단</span><strong>탑승 가능성</strong><small>개인 조건 반영</small></div>
+            </div>
+            <p><img src="/assets/icons/chakchak/promise-safety.svg" alt="" /> 계산은 자체 모델, 설명은 생성형 AI</p>
+          </article>
+          <div class="fusion-results" aria-label="착착 AI의 출력">
+            <article><img src="/assets/icons/chakchak/guide-train.svg" alt="" /><div><span>다음 행동</span><strong>탈 수 있는 열차</strong></div></article>
+            <article><img src="/assets/icons/chakchak/guide-travel.svg" alt="" /><div><span>여정 복구</span><strong>교통·관광 재연결</strong></div></article>
+            <article><img src="/assets/icons/chakchak/model-reconciliation.svg" alt="" /><div><span>추천 근거</span><strong>바뀐 이유 설명</strong></div></article>
+          </div>
+        </div>
+        <div class="fusion-foot reveal" data-reveal="2"><strong>7개 공개·공식 데이터</strong><span>실시간 신호가 없으면 검증된 시간표로 안전 보완</span><strong>모바일에서 바로 행동</strong></div>
+      </section>
+
+      <section
+        class="slide slide--scenario"
+        data-title="35분 늦어지면 KTX 419 대신 KTX 421을 추천합니다"
+        data-notes="실제 화면에서는 정시 도착일 때 KTX 419를 추천합니다. 하지만 비행기가 35분 늦어지면 같은 여행에서도 KTX 421로 추천이 바뀝니다. 항공 지연과 입국장, 날씨, 짐과 이동조건을 다시 반영해 놓칠 가능성이 커진 열차를 먼저 권하지 않는 것입니다."
+        aria-label="4. 지연 시연"
+      >
+        <header class="slide-heading reveal" data-reveal="0">
+          <p class="eyebrow">핵심 시연</p>
+          <h2>35분 늦어지면 <em>KTX 419 대신 KTX 421</em>을 추천합니다</h2>
+        </header>
+        <div class="scenario-switch reveal" data-reveal="1" role="group" aria-label="지연 상황 비교">
+          <button type="button" data-scenario="normal" class="is-selected" aria-pressed="true">정시 도착</button>
+          <button type="button" data-scenario="delay" aria-pressed="false">35분 지연</button>
+        </div>
+        <div class="scenario-stage" data-mode="normal">
+          <figure class="scenario-phone scenario-phone--normal reveal" data-reveal="1">
+            <span class="scenario-kicker">정시 도착</span>
+            <div class="phone-shell"><img src="/presentation/assets/mobile-routes-normal.png" alt="정시 도착 시 KTX 419 추천 화면" /></div>
+            <figcaption><strong>KTX 419</strong><span>현재 일정 유지</span></figcaption>
+          </figure>
+          <div class="scenario-impact reveal" data-reveal="2">
+            <span>비행기</span><strong>+35분</strong><i>추천 다시 계산</i>
+          </div>
+          <figure class="scenario-phone scenario-phone--delay reveal" data-reveal="3">
+            <span class="scenario-kicker">35분 지연</span>
+            <div class="phone-shell"><img src="/presentation/assets/mobile-routes-delay.png" alt="35분 지연 시 KTX 421 추천 화면" /></div>
+            <figcaption><strong>KTX 421</strong><span>탑승 가능성이 높은 다음 열차</span></figcaption>
+          </figure>
+        </div>
+        <div class="scenario-result reveal" data-reveal="4">
+          <span class="result-check">✓</span>
+          <p><strong>놓칠 가능성이 커진 열차는 우선 추천하지 않습니다.</strong><br />현재 조건에서 실제로 이어 갈 수 있는 다음 여정을 제안합니다.</p>
+        </div>
+      </section>
+
+      <section
+        class="slide"
+        data-title="여정 전체와 이미 예매한 승차권을 함께 지킵니다"
+        data-notes="추천은 열차 한 칸에서 끝나지 않습니다. 착착은 탑승 안전과 접근성, 예산, 환승, 관광 운영시간을 먼저 확인해 조건에 맞는 여정을 고릅니다. 이미 표가 있다면 대체편 좌석을 먼저 확인하고 KTX와 공항철도 표의 반환 마감과 예상 위약금을 따로 안내합니다. 새 표 확보가 확실할 때 기존 표를 처리하며, 자동 취소나 자동 재예매는 하지 않습니다."
+        aria-label="5. 지역 관광"
+      >
+        <header class="slide-heading reveal" data-reveal="0">
+          <p class="eyebrow">여정 복구 최적화</p>
+          <h2>여정 전체와 <em>이미 예매한 승차권</em>을 함께 지킵니다</h2>
+        </header>
+        <div class="optimizer-architecture reveal" data-reveal="1">
+          <div class="optimizer-candidates">
+            <p>열차 후보</p>
+            <article class="is-rejected"><img src="/assets/icons/chakchak/route-ktx.svg" alt="" /><div><strong>KTX 419</strong><span>탑승 여유 부족</span></div><b>제외</b></article>
+            <article class="is-selected"><img src="/assets/icons/chakchak/route-ktx.svg" alt="" /><div><strong>KTX 421</strong><span>조건 통과</span></div><b>선택</b></article>
+            <article><img src="/assets/icons/chakchak/route-ktx.svg" alt="" /><div><strong>다음 열차</strong><span>도착이 더 늦음</span></div><b>비교</b></article>
+          </div>
+          <article class="constraint-engine">
+            <header><img src="/assets/icons/chakchak/field-gate.svg" alt="" /><div><span>정식 제약 최적화기</span><strong>모든 후보 조합을 확인</strong></div></header>
+            <div class="constraint-grid">
+              <span><img src="/assets/icons/chakchak/promise-safety.svg" alt="" />탑승 안전</span>
+              <span><img src="/assets/icons/chakchak/field-access.svg" alt="" />접근성</span>
+              <span><img src="/assets/icons/chakchak/field-quality.svg" alt="" />예산·환승</span>
+              <span><img src="/assets/icons/chakchak/travel-time.svg" alt="" />운영시간</span>
+              <span><img src="/assets/icons/chakchak/journey-confirmed.svg" alt="" />예약 유지</span>
+              <span><img src="/assets/icons/chakchak/travel-stay.svg" alt="" />지역 체류</span>
+            </div>
+            <p>조건 위반은 먼저 제외하고<br /><strong>필수 일정·예약·체류시간</strong>을 가장 많이 보존합니다</p>
+          </article>
+          <div class="optimized-journey">
+            <p>다시 연결된 여정</p>
+            <article><img src="/assets/icons/chakchak/route-arex.svg" alt="" /><div><span>공항철도</span><strong>19:48</strong></div></article>
+            <article><img src="/assets/icons/chakchak/route-ktx.svg" alt="" /><div><span>KTX 421</span><strong>21:12</strong></div></article>
+            <article><img src="/assets/icons/chakchak/travel-stay.svg" alt="" /><div><span>숙소 체크인</span><strong>필수 일정 유지</strong></div></article>
+            <article><img src="/assets/icons/chakchak/travel-experience.svg" alt="" /><div><span>예약 체험</span><strong>다음 날 연결</strong></div></article>
+          </div>
+        </div>
+        <div class="presentation-ticket-protection reveal" data-reveal="2">
+          <div class="presentation-ticket-title"><img src="/assets/icons/chakchak/promise-official.svg" alt="" /><span>예매한 승차권 보호</span><strong>기존 표부터 없애지 않습니다</strong></div>
+          <ol aria-label="승차권을 안전하게 처리하는 순서">
+            <li><b>1</b><span>대체편 좌석 확인</span></li>
+            <li><b>2</b><span>반환 마감·예상 위약금 확인</span></li>
+            <li><b>3</b><span>새 표 확보 후 기존 표 처리</span></li>
+          </ol>
+          <div class="presentation-ticket-operators"><span>공항철도</span><span>KTX·코레일</span><strong>각각 공식 확인</strong><small>자동 취소·자동 재예매 없음</small></div>
+        </div>
+      </section>
+
+      <section
+        class="slide slide--model"
+        data-title="착착 자체 AI는 여행 정보를 모아 실제로 탈 수 있는 열차를 찾습니다"
+        data-notes="착착 자체 AI는 항공 도착, 공항 상황, 날씨, 짐과 이동조건을 함께 살핍니다. 그 결과로 보통 도착할 때, 여유 있게 잡은 때, 아주 늦는 경우까지 세 가지 시간을 계산하고 열차마다 실제로 탈 수 있는 가능성을 비교합니다. 같은 여행 상황에서 네 가지 예측 방식을 비교했고, 지연이 커질수록 탑승 가능성이 낮아지는지, 이동지원 조건을 지키는지, 같은 입력에 같은 결과를 내는지까지 반복 검증했습니다. 현재 결과는 시뮬레이션 검증값입니다."
+        aria-label="6. 착착 자체 AI 모델 구조"
+      >
+        <header class="slide-heading reveal" data-reveal="0">
+          <p class="eyebrow">착착 자체 AI</p>
+          <h2>여행 정보를 모아 <em>탈 수 있는 열차와 다음 일정</em>을 찾습니다</h2>
+        </header>
+
+        <figure class="model-architecture-figure reveal" data-reveal="1">
+          <img
+            class="model-architecture-image"
+            src="/assets/presentation/chakchak-ai-architecture-v2.png"
+            alt="여행 정보를 모아 도착시간을 예측하고 탈 수 있는 열차를 찾은 뒤 여행 일정을 다시 연결하는 착착 자체 AI 구조"
+          />
+        </figure>
+
+        <div class="model-simple-summary reveal" data-reveal="2">
+          <article><strong>도착시간 3가지</strong><span>보통·여유·아주 늦는 경우까지 계산</span></article>
+          <article><strong>열차별 탑승 가능성</strong><span>가장 빠른 열차보다 실제로 탈 수 있는 열차 우선</span></article>
+          <article><strong>핵심 동작 반복 검증</strong><span>지연 반응 · 접근성 조건 · 결과 재현성 확인</span></article>
+        </div>
+
+        <div class="model-honesty reveal" data-reveal="3">
+          <img src="/assets/icons/chakchak/field-honest.svg" alt="" />
+          <strong>현재 결과는 시뮬레이션 검증값입니다.</strong>
+          <span>실제 운영 전에는 운영기관의 공식 기록과 별도 검증이 필요합니다.</span>
+        </div>
+      </section>
+
+      <section
+        class="slide slide--closing"
+        data-title="인천공항에서 시작해 전국 철도와 지역여행으로 확장합니다"
+        data-notes="착착은 인천공항과 KTX를 잇는 시연에서 시작하지만 구조는 한 노선에 머물지 않습니다. 철도 운행정보가 연결되면 더 다양한 열차를 비교하고, 전국 어느 지역이든 새 도착시간에 맞춰 관광 일정을 다시 연결할 수 있습니다. 운영기관의 실제 기록이 쌓이면 지역과 시간대에 맞게 예측과 추천도 계속 개선할 수 있습니다. 착륙에서 착석까지, 여행이 착착. 감사합니다."
+        aria-label="7. 마무리"
+      >
+        <header class="closing-heading reveal" data-reveal="0">
+          <img src="/assets/brand/chakchak-logo-app.png" alt="" />
+          <div><h2>인천공항에서 시작해 <em>전국 철도와 지역여행</em>으로</h2><p>한 번 만든 연결 구조를 더 많은 열차·지역·여행 상황으로 넓힐 수 있습니다.</p></div>
+        </header>
+        <div class="closing-values">
+          <article class="reveal" data-reveal="1"><img src="/assets/icons/chakchak/guide-train.svg" alt="" /><span>01</span><strong>더 많은 철도로</strong><p>KTX 중심 시연에서<br />ITX·일반열차·다른 운영사까지</p></article>
+          <article class="reveal" data-reveal="2"><img src="/assets/icons/chakchak/guide-travel.svg" alt="" /><span>02</span><strong>더 많은 지역으로</strong><p>인천공항 이후 전국 어디든<br />도착시간에 맞춰 여행을 연결</p></article>
+          <article class="reveal" data-reveal="3"><img src="/assets/icons/chakchak/journey-model.svg" alt="" /><span>03</span><strong>더 정확한 안내로</strong><p>실제 운영 기록이 쌓일수록<br />지역·시간대별 예측을 개선</p></article>
+        </div>
+        <div class="closing-growth-foot reveal" data-reveal="3"><strong>항공 도착을 전국 철도와 지역 관광으로 연결하는 확장 가능한 이동 플랫폼</strong><span>국민 이동 편의 · 철도×항공 협업 · 지역 관광 활성화</span></div>
+        <div class="closing-visual reveal" data-reveal="2">
+          <img src="/assets/illustrations/rail-air-journey-3d.png" alt="공항에서 철도와 지역 관광으로 이어지는 착착 여정" />
+        </div>
+        <div class="closing-signature reveal" data-reveal="4"><strong>착륙에서 착석까지, 여행이 착착</strong><span>착착 CHAK² · 곽현</span></div>
+      </section>
+    </main>
+
+    <aside class="notes-panel" id="notes-panel" aria-hidden="true" aria-label="발표자 메모" inert>
+      <div><span>발표자 메모</span><button type="button" id="notes-close" aria-label="메모 닫기">×</button></div>
+      <strong id="notes-title"></strong>
+      <p id="notes-copy"></p>
+    </aside>
+
+    <div class="help-overlay" id="help-overlay" aria-hidden="true" inert>
+      <div class="help-dialog" role="dialog" aria-modal="true" aria-labelledby="help-title">
+        <button type="button" id="help-close" aria-label="조작 방법 닫기">×</button>
+        <p class="eyebrow">발표 조작</p>
+        <h2 id="help-title">한 번 클릭하면 다음 화면으로 이동합니다</h2>
+        <dl>
+          <div><dt>클릭 · Space · →</dt><dd>다음 화면</dd></div>
+          <div><dt>← · Backspace</dt><dd>이전 화면</dd></div>
+          <div><dt>F</dt><dd>전체 화면</dd></div>
+          <div><dt>N</dt><dd>발표자 메모</dd></div>
+          <div><dt>Esc</dt><dd>열린 창 닫기</dd></div>
+        </dl>
+      </div>
+    </div>
+
+    <nav class="deck-controls" aria-label="슬라이드 이동">
+      <button type="button" id="prev-button" aria-label="이전 화면">←</button>
+      <div class="reveal-indicator" id="reveal-indicator" aria-live="polite">1 / 7 화면</div>
+      <button type="button" id="next-button" aria-label="다음 화면">→</button>
+    </nav>
+    <p class="click-hint" id="click-hint">화면을 한 번 클릭하면 다음 화면으로 이동합니다</p>
+    <div class="sr-only" id="deck-announcer" aria-live="polite"></div>
+  </body>
+</html>

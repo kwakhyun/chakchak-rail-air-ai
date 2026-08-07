@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "1.0",
+  "auditVersion": "chakchak-independent-audit-2026-08-v2",
+  "modelVersion": "2.0.0-sim",
+  "rows": 400,
+  "rowsPerSegment": 100,
+  "simulationsPerRow": 1200,
+  "overall": {
+    "p50MaeMinutes": 2.875,
+    "p90MaeMinutes": 3.714,
+    "p95MaeMinutes": 5.901,
+    "p90UnderpredictionRate": 0.345,
+    "p90MeanSafetyBiasMinutes": 1.579,
+    "probabilityMae": 0.0238,
+    "unexpectedFallbackRate": 0
+  },
+  "segments": {
+    "iid": {
+      "p50MaeMinutes": 2.189,
+      "p90MaeMinutes": 3.804,
+      "p95MaeMinutes": 6.311,
+      "p90UnderpredictionRate": 0.39,
+      "p90MeanSafetyBiasMinutes": 1.144,
+      "probabilityMae": 0.0341,
+      "unexpectedFallbackRate": 0
+    },
+    "stress": {
+      "p50MaeMinutes": 3.96,
+      "p90MaeMinutes": 3.297,
+      "p95MaeMinutes": 6.665,
+      "p90UnderpredictionRate": 0.37,
+      "p90MeanSafetyBiasMinutes": 1.513,
+      "probabilityMae": 0.0235,
+      "unexpectedFallbackRate": 0
+    },
+    "lowRisk": {
+      "p50MaeMinutes": 1.551,
+      "p90MaeMinutes": 4.114,
+      "p95MaeMinutes": 5.388,
+      "p90UnderpredictionRate": 0.08,
+      "p90MeanSafetyBiasMinutes": 3.954,
+      "probabilityMae": 0.0138,
+      "unexpectedFallbackRate": 0
+    },
+    "accessibility": {
+      "p50MaeMinutes": 3.801,
+      "p90MaeMinutes": 3.641,
+      "p95MaeMinutes": 5.241,
+      "p90UnderpredictionRate": 0.54,
+      "p90MeanSafetyBiasMinutes": -0.297,
+      "probabilityMae": 0.024,
+      "unexpectedFallbackRate": 0
+    }
+  },
+  "monotonicAudit": {
+    "comparisons": 3900,
+    "violations": 0,
+    "violationRate": 0
+  },
+  "decisionAudit": {
+    "rows": 160,
+    "rowsPerSegment": 40,
+    "guardrailViolations": 0,
+    "accessibilityViolations": 0,
+    "constraintOptimizerViolations": 0,
+    "waterfallResidualViolations": 0,
+    "modelEngineDisagreementRate": 0.038,
+    "conservativeInterventionRate": 0.494,
+    "noSafeCandidateRate": 0.556,
+    "averageAvoidableWaitRegretMinutes": 0,
+    "p90AvoidableWaitRegretMinutes": 0
+  }
+}
