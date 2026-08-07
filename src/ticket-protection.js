@@ -10,6 +10,13 @@ export const AREX_TERMS_URL = "https://www.arex.or.kr/content.do?menuNo=MN201503
 
 const ticketTypeLabel = (ticketType) => TICKET_TYPES.find((item) => item.id === ticketType)?.label || "일반 승차권";
 
+const koreaCalendarDate = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Asia/Seoul",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit"
+});
+
 function minutesUntil(value, now) {
   const departure = new Date(value).getTime();
   const current = new Date(now).getTime();
@@ -144,7 +151,8 @@ export function buildTicketProtectionAdvice({
   const crossesMidnight = Boolean(
     alternativeKtx?.departure &&
     alternativeKtx?.arrival &&
-    new Date(alternativeKtx.arrival).getDate() !== new Date(alternativeKtx.departure).getDate()
+    koreaCalendarDate.format(new Date(alternativeKtx.arrival)) !==
+      koreaCalendarDate.format(new Date(alternativeKtx.departure))
   );
   const checks = [
     {
