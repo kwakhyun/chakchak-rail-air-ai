@@ -1,25 +1,14 @@
 import { spawnSync } from "node:child_process";
-import { access, readFile } from "node:fs/promises";
+import { access, readFile, readdir } from "node:fs/promises";
+import { join } from "node:path";
 
 const requiredFiles = [
   "public/index.html",
   "public/manifest.webmanifest",
-  "scripts/train_chakchak_model.mjs",
-  "scripts/audit_chakchak_model.mjs",
-  "scripts/audit_real_world_validation.mjs",
-  "scripts/pilot_ops.mjs",
-  "lib/p2-validation-store.mjs",
   "server.mjs",
   "src/app.js",
-  "src/chakchak-ai.js",
-  "src/chakchak-features.js",
-  "src/chakchak-model-data.js",
-  "src/data.js",
-  "src/engine.js",
-  "src/journey-decision.js",
-  "src/live-journey.js",
-  "src/real-world-validation.js",
-  "src/styles.css"
+  "src/styles.css",
+  "worker/index.ts"
 ];
 
 for (const file of requiredFiles) {
@@ -31,24 +20,23 @@ if (!index.includes('lang="ko"') || !index.includes("/src/app.js")) {
   throw new Error("index.html metadata or entry module is missing");
 }
 
-const checks = [
-  ["--check", "server.mjs"],
-  ["--check", "scripts/train_chakchak_model.mjs"],
-  ["--check", "scripts/audit_chakchak_model.mjs"],
-  ["--check", "scripts/audit_real_world_validation.mjs"],
-  ["--check", "scripts/pilot_ops.mjs"],
-  ["--check", "lib/p2-validation-store.mjs"],
-  ["--check", "src/app.js"],
-  ["--check", "src/chakchak-ai.js"],
-  ["--check", "src/chakchak-features.js"],
-  ["--check", "src/chakchak-model-data.js"],
-  ["--check", "src/data.js"],
-  ["--check", "src/engine.js"],
-  ["--check", "src/journey-decision.js"],
-  ["--check", "src/live-journey.js"],
-  ["--check", "src/real-world-validation.js"],
-  ["--test"]
-];
+async function sourceFiles(directory) {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const files = await Promise.all(entries.map((entry) => {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) return sourceFiles(path);
+    return /\.(?:m?js)$/.test(entry.name) ? [path] : [];
+  }));
+  return files.flat();
+}
+
+const syntaxFiles = (await Promise.all([
+  sourceFiles("lib"),
+  sourceFiles("scripts"),
+  sourceFiles("src")
+])).flat();
+const checks = syntaxFiles.map((file) => ["--check", file]);
+checks.push(["--check", "server.mjs"], ["--test"]);
 
 for (const args of checks) {
   const result = spawnSync(process.execPath, args, { stdio: "inherit" });

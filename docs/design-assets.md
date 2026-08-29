@@ -14,21 +14,6 @@
 
 검증: RGBA, 네 모서리 완전 투명, 지정 4색만 사용. 앱용 파일은 원본을 중앙 크롭해 512×512로 최적화했습니다.
 
-## 메뉴 아이콘 4종
-
-- `public/assets/icons/menu-journey-app.png`: 비행기→연결 경로→열차
-- `public/assets/icons/menu-routes-app.png`: 열차·시계·다음 화살표
-- `public/assets/icons/menu-travel-app.png`: 달력·목적지 핀
-- `public/assets/icons/menu-about-app.png`: 정보 표시·데이터 연결점
-- 생성 원본: 같은 폴더의 `menu-*.png`
-- 크로마키 원본: `tmp/imagegen/menu-*-chroma.png`
-
-공통 프롬프트:
-
-> Use case: stylized-concept. Asset type: 착착 UI 메뉴 아이콘. 굵고 둥근 flat vector-like filled/outline hybrid 스타일, 작은 크기에서도 명확한 단일 실루엣. `#005BAC`, `#00727A`, `#F3B700`, 흰색. 균일한 `#FF00FF` 크로마키 배경. 텍스트·공식 로고·상표·그라데이션·3D·그림자·워터마크 금지.
-
-각 아이콘은 별도 생성했습니다. 최종 파일은 256px 이하로 크롭·리사이즈했으며, 네 모서리 투명·마젠타 잔색 0픽셀을 확인했습니다.
-
 ## Rail × Air 여정 일러스트
 
 - 최종: `public/assets/illustrations/rail-air-journey.png`

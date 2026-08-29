@@ -25,27 +25,29 @@
     "pilot:phase": "node scripts/pilot_ops.mjs phase",
     "pilot:export": "node scripts/pilot_ops.mjs export",
     "test": "node --test",
-    "verify": "node scripts/verify.mjs"
+    "typecheck": "tsc --noEmit",
+    "verify": "node scripts/verify.mjs",
+    "check": "npm run typecheck && npm run verify && npm run build:sites"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "dependencies": {
-    "@phosphor-icons/core": "^2.1.1",
-    "react": "19.2.6",
-    "react-dom": "19.2.6"
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "1.37.1",
+    "@cloudflare/vite-plugin": "1.54.2",
+    "@phosphor-icons/core": "^2.1.1",
     "@types/node": "22.19.19",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
     "@vitejs/plugin-rsc": "^0.5.26",
-    "react-server-dom-webpack": "^19.2.6",
+    "react-server-dom-webpack": "^19.2.8",
     "typescript": "5.9.3",
-    "vinext": "1.0.0-beta.2",
-    "vite": "8.0.13",
-    "wrangler": "4.92.0"
+    "vinext": "1.0.0-beta.8",
+    "vite": "8.2.2",
+    "wrangler": "4.127.1"
   }
 }

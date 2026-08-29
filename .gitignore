@@ -11,6 +11,7 @@ coverage/
 dist/
 .next/
 .wrangler/
+*.tsbuildinfo
 public/src/
 
 # Local runtime state

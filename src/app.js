@@ -19,12 +19,24 @@ import {
 import { buildTicketProtectionAdvice, TICKET_TYPES } from "./ticket-protection.js";
 
 const app = document.querySelector("#app");
+if (!(app instanceof HTMLElement)) {
+  throw new Error("CHAK² app root is missing.");
+}
+
 const timeFormatter = new Intl.DateTimeFormat("ko-KR", {
   hour: "2-digit",
   minute: "2-digit",
   hour12: false,
   timeZone: "Asia/Seoul"
 });
+const localTimeFormatter = new Intl.DateTimeFormat("en-GB", {
+  timeZone: "Asia/Seoul",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23"
+});
+const compactScreenQuery = window.matchMedia("(max-width: 720px)");
+const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
 const iconAsset = (name) => `/assets/icons/chakchak/${name}.svg`;
 const ICONS = Object.freeze({
@@ -49,7 +61,6 @@ const ICONS = Object.freeze({
   travelExperience: iconAsset("travel-experience"),
   travelStay: iconAsset("travel-stay"),
   travelFallback: iconAsset("travel-fallback"),
-  travelPreview: iconAsset("travel-preview"),
   travelArrival: iconAsset("travel-arrival"),
   travelTime: iconAsset("travel-time"),
   travelFirstPlace: iconAsset("travel-first-place"),
@@ -76,7 +87,6 @@ const ICONS = Object.freeze({
   fieldPlatform: iconAsset("field-step-platform"),
   fieldTrain: iconAsset("field-step-train"),
   fieldResults: iconAsset("field-step-results"),
-  fieldPrivate: iconAsset("field-private"),
   fieldParticipate: iconAsset("field-participate"),
   fieldRecord: iconAsset("field-record"),
   fieldPublished: iconAsset("field-results"),
@@ -307,13 +317,7 @@ function buildOptimizationActivities(scheduledArrival) {
 }
 
 function localHourFromIso(value) {
-  const formatter = new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Asia/Seoul",
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23"
-  });
-  const [hour, minute] = formatter.format(new Date(value)).split(":").map(Number);
+  const [hour, minute] = localTimeFormatter.format(new Date(value)).split(":").map(Number);
   return hour + minute / 60;
 }
 
@@ -321,7 +325,27 @@ function buildChakchakPrediction(scenarioId, scheduledArrival, railPlan) {
   return predictChakchakJourney(buildChakchakInput(scenarioId, scheduledArrival, railPlan));
 }
 
+let viewModelCache = null;
+
 function getViewModel() {
+  const dependencies = {
+    scenarioId: state.scenarioId,
+    previewDelayMinutes: state.previewDelayMinutes,
+    journey: state.journey,
+    signals: state.signals,
+    confirmedJourney: state.confirmedJourney
+  };
+  if (
+    viewModelCache
+    && viewModelCache.scenarioId === dependencies.scenarioId
+    && viewModelCache.previewDelayMinutes === dependencies.previewDelayMinutes
+    && viewModelCache.journey === dependencies.journey
+    && viewModelCache.signals === dependencies.signals
+    && viewModelCache.confirmedJourney === dependencies.confirmedJourney
+  ) {
+    return viewModelCache.value;
+  }
+
   const preset = disruptionPresets[state.scenarioId];
   const simulation = buildSimulation(state.scenarioId);
   const primary = simulation.candidates[0];
@@ -352,7 +376,7 @@ function getViewModel() {
     journey: state.journey
   });
 
-  return {
+  const viewModel = {
     preset,
     simulation,
     primary,
@@ -374,6 +398,8 @@ function getViewModel() {
     modelEngineAgreement: Boolean(chakchakAi.decision?.reconciliation?.agreement),
     ticketProtection
   };
+  viewModelCache = { ...dependencies, value: viewModel };
+  return viewModel;
 }
 
 function modelPredictionFor(view, candidate) {
@@ -422,7 +448,7 @@ function escapeHtml(value) {
 }
 
 function isCompactScreen() {
-  return window.matchMedia("(max-width: 720px)").matches;
+  return compactScreenQuery.matches;
 }
 
 function dataModeLabel() {
@@ -1712,7 +1738,7 @@ function bindEvents(view) {
     if (!details) return;
     details.open = true;
     details.querySelector("summary")?.focus({ preventScroll: true });
-    details.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    details.scrollIntoView({ behavior: reducedMotionQuery.matches ? "auto" : "smooth", block: "start" });
   });
   document.querySelectorAll("[data-open-recovery]").forEach((button) => button.addEventListener("click", openRecovery));
   document.querySelector("#close-recovery")?.addEventListener("click", closeRecovery);
@@ -1781,7 +1807,7 @@ function setActiveView(viewId, options = {}) {
   render({ focusSelector: options.focusHeading ? "#view-title" : null });
   window.scrollTo({
     top: 0,
-    behavior: isCompactScreen() || window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
+    behavior: isCompactScreen() || reducedMotionQuery.matches ? "auto" : "smooth"
   });
 }
 
@@ -2020,18 +2046,21 @@ async function applyJourneySetup(event) {
     return;
   }
 
-  state.journey.flightId = flightId;
-  state.journey.arrivalAt = fromDateTimeLocalValue(arrivalValue, state.journey.arrivalAt);
-  state.journey.destination = document.querySelector("#journey-destination")?.value || "전주";
-  state.journey.checkedBags = Number(document.querySelector("#journey-bags")?.value || 0);
-  state.journey.mobility = document.querySelector("#journey-mobility")?.checked ? "assisted" : "standard";
-  state.journey.largeLuggage = Boolean(document.querySelector("#journey-large-luggage")?.checked);
-  state.journey.ticket = {
-    hasBookedTicket,
-    korail: hasKorailTicket,
-    arex: hasArexTicket,
-    ticketType: document.querySelector("#journey-ticket-type")?.value || "standard",
-    arexType: document.querySelector("#journey-arex-type")?.value || "direct"
+  state.journey = {
+    ...state.journey,
+    flightId,
+    arrivalAt: fromDateTimeLocalValue(arrivalValue, state.journey.arrivalAt),
+    destination: document.querySelector("#journey-destination")?.value || "전주",
+    checkedBags: Number(document.querySelector("#journey-bags")?.value || 0),
+    mobility: document.querySelector("#journey-mobility")?.checked ? "assisted" : "standard",
+    largeLuggage: Boolean(document.querySelector("#journey-large-luggage")?.checked),
+    ticket: {
+      hasBookedTicket,
+      korail: hasKorailTicket,
+      arex: hasArexTicket,
+      ticketType: document.querySelector("#journey-ticket-type")?.value || "standard",
+      arexType: document.querySelector("#journey-arex-type")?.value || "direct"
+    }
   };
   state.scenarioId = "normal";
   state.previewDelayMinutes = 0;
@@ -2221,19 +2250,19 @@ async function loadValidationStatus(options = {}) {
     state.pilotStatus = null;
   } finally {
     state.validationLoading = false;
-    if (state.activeView === "validation") render();
+    if (options.render !== false && state.activeView === "validation") render();
   }
 }
 
-async function detectDataMode() {
+async function detectDataMode(options = {}) {
   try {
     const response = await fetch("/api/health", { cache: "no-store" });
     if (!response.ok) throw new Error("FUSION_RESPONSE_ERROR");
     const payload = await response.json();
-    state.dataMode = payload.dataMode || state.dataMode;
+    if (!state.fusion) state.dataMode = payload.dataMode || state.dataMode;
     state.openaiConfigured = Boolean(payload.ai?.configured);
     state.aiModel = payload.ai?.model || state.aiModel;
-    render();
+    if (options.render !== false) render();
   } catch {
     state.dataMode = "offline-demo";
   }
@@ -2251,7 +2280,7 @@ async function loadFusionData(options = {}) {
       ? "live-ready"
       : state.fusion.sourceSummary?.live > 0 ? "hybrid-demo" : "offline-demo";
     state.fusionLoading = false;
-    render();
+    if (options.render !== false) render();
     if (options.announceResult) {
       announce(`${state.journey.flightId} 여정을 다시 계산했습니다. 핵심 입력 ${state.signals.liveInputCount}개가 실시간입니다.`);
     }
@@ -2259,7 +2288,7 @@ async function loadFusionData(options = {}) {
     state.fusion = null;
     state.signals = null;
     state.fusionLoading = false;
-    render();
+    if (options.render !== false) render();
   }
 }
 
@@ -2271,7 +2300,16 @@ window.addEventListener("hashchange", () => {
   }
 });
 
-render();
-detectDataMode();
-loadFusionData();
-loadValidationStatus();
+async function bootstrap() {
+  render();
+  const validationPromise = loadValidationStatus({ render: false });
+  await Promise.all([
+    detectDataMode({ render: false }),
+    loadFusionData({ render: false })
+  ]);
+  render();
+  await validationPromise;
+  if (state.activeView === "validation") render();
+}
+
+bootstrap();

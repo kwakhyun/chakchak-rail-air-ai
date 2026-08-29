@@ -1,7 +1,7 @@
 # 착착 CHAK² — 착륙부터 착석까지
 
 [![CI](https://github.com/kwakhyun/chakchak-rail-air-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/kwakhyun/chakchak-rail-air-ai/actions/workflows/ci.yml)
-![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=nodedotjs&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-0b6cb8)
 
 > 항공편 도착 이후의 입국·수하물·공항철도·KTX·지역 일정을 하나의 흐름으로 연결하고, **가장 빠른 열차가 아니라 실제로 탈 가능성이 높은 여정**을 안내하는 Rail × Air AI 서비스입니다.
@@ -111,7 +111,7 @@ flowchart LR
 
 ## 로컬에서 실행하기
 
-요구 사항: Node.js 20 이상
+요구 사항: Node.js 22 이상
 
 ```bash
 git clone https://github.com/kwakhyun/chakchak-rail-air-ai.git
@@ -140,7 +140,9 @@ npm run dev
 
 ```bash
 npm test                 # 51개 자동 테스트
+npm run typecheck        # React/Vinext/Worker TypeScript 엄격 검사
 npm run verify           # 필수 파일·문법·전체 테스트 확인
+npm run check            # 타입 검사·테스트·Sites 프로덕션 빌드 일괄 확인
 npm run train:model      # 고정 시드로 모델 재학습
 npm run benchmark:model  # 네 가지 시간 예측 방법 비교
 npm run audit:model      # 독립 시드 모델 감사
