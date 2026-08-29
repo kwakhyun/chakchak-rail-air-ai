@@ -47,7 +47,7 @@
 - P95 신규 모델은 목표 포함률 95%에 대해 97.25%로 더 보수적이지만, 기존 보정보다 정확도 우위가 없어 추가 개선 대상으로 남긴다.
 - 세 신규 시간 헤드의 분위수 교차는 0건이다.
 
-비교 원본은 `output/audit/chakchak-model-v2-comparison.json`과 `output/audit/chakchak-model-v2-comparison.md`에 저장한다. Monte Carlo는 같은 시뮬레이터의 참고분포이므로 실제 세계의 정답이 아니다.
+공개 비교 원본은 [`evidence/chakchak-model-v2-comparison.json`](../evidence/chakchak-model-v2-comparison.json)과 [`evidence/chakchak-model-v2-comparison.md`](../evidence/chakchak-model-v2-comparison.md)에 보관한다. 재실행 과정의 로컬 산출물은 Git에서 제외된 `output/audit/`에 생성된다. Monte Carlo는 같은 시뮬레이터의 참고분포이므로 실제 세계의 정답이 아니다.
 
 ## 독립 감사
 
@@ -65,7 +65,7 @@
 | 제약 최적화기 선택 불일치 | 0건 |
 | 추천 이유 합계 잔차 | 0건 |
 
-독립 감사 원본은 `output/audit/chakchak-model-v2-independent.json`에 저장한다.
+공개 독립 감사 원본은 [`evidence/chakchak-model-v2-independent.json`](../evidence/chakchak-model-v2-independent.json)에 보관한다. 재실행 산출물은 로컬 `output/audit/`에 생성된다.
 
 ## 정식 제약 최적화기
 
@@ -110,8 +110,8 @@ GPT-5.6 Luna는 자체 모델이 확정한 숫자와 다음 행동을 한국어�
 
 ## 한계와 다음 검증
 
-- 현재 실제 승객 완료 결과는 0건이며 Brier score, 실제 P50/P90/P95 오차와 실제 탑승 성공률을 주장하지 않는다.
-- P95 신규 GBDT는 보수성을 확보했지만 기존 보정보다 정확도 우위가 없어 실측 전 추가 비교가 필요하다.
+- 현재 실제 승객 완료 결과는 0건이며 Brier score, 실제 P50/P90 오차와 실제 탑승 성공률을 주장하지 않는다.
+- P95 신규 GBDT는 보수성을 확보했지만 기존 보정보다 정확도 우위가 없다. 현재 P2 실측 파이프라인은 P50/P90만 평가하므로, P95는 저장 필드와 포함률 검증을 추가하기 전까지 시뮬레이션 참고지표로만 공개한다.
 - 같은 시뮬레이터가 학습·참고 분포를 만들기 때문에 실제 공항 운영의 모든 변화를 대표하지 못한다.
 - 실제 운영 검증은 운영기관 협의, 관리형 데이터베이스, HTTPS, 공식 기록 대조와 별도 개인정보 보호 절차가 갖춰진 뒤 진행한다.
 - 좌석, 운임, 발권, 재발권과 연결보호는 코레일·공항철도 공식 채널의 최종 확인 대상이다.

@@ -6,7 +6,7 @@
 
 - UI 최적화본: `public/assets/brand/chakchak-logo-app.png`
 - 생성 원본: `public/assets/brand/chakchak-logo-v2.png`
-- 크로마키 원본: `tmp/imagegen/chakchak-logo-v2-chroma.png`
+- 크로마키 작업 원본: 로컬 임시파일로만 사용했으며 공개 저장소에는 포함하지 않음
 
 프롬프트:
 
@@ -17,7 +17,7 @@
 ## Rail × Air 여정 일러스트
 
 - 최종: `public/assets/illustrations/rail-air-journey.png`
-- 크로마키 원본: `tmp/imagegen/rail-air-journey-chroma.png`
+- 크로마키 작업 원본: 로컬 임시파일로만 사용했으며 공개 저장소에는 포함하지 않음
 
 프롬프트:
 
