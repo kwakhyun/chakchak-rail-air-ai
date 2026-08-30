@@ -1436,8 +1436,11 @@ button { color: inherit; }
   .presentation-stage { inset-block-start: 62px; }
   .slide { padding-top: 26px; padding-bottom: 62px; }
   .slide-heading { padding-bottom: 14px; }
-  .hero-copy { top: 6vh; }
-  .hero-visual { height: 47vh; min-height: 300px; }
+  .hero-copy { top: 4vh; }
+  .hero-copy h1 { font-size: clamp(48px, 4.5vw, 68px); }
+  .hero-lead { margin-top: 18px; font-size: clamp(18px, 1.45vw, 23px); line-height: 1.35; }
+  .hero-presenter { margin-top: 14px; padding-block: 9px; }
+  .hero-visual { height: 36vh; min-height: 200px; }
   .problem-chain { margin-top: 24px; }
   .statement-banner { margin-top: 26px; padding: 16px; }
   .solution-layout { min-height: 62vh; }

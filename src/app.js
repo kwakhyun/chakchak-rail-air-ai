@@ -181,6 +181,7 @@ const state = {
   guideMode: null,
   guideError: null,
   guideRequestId: 0,
+  activeDialog: null,
   validationStatus: null,
   pilotStatus: null,
   validationLoading: true,
@@ -1693,6 +1694,12 @@ function render(options = {}) {
     <div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>`;
 
   bindEvents(view);
+  const activeDialog = state.activeDialog === "recovery"
+    ? document.querySelector("#recovery-dialog")
+    : state.activeDialog === "journey-setup"
+      ? document.querySelector("#journey-setup-dialog")
+      : null;
+  if (activeDialog && !activeDialog.open) activeDialog.showModal();
   if (options.focusSelector) {
     window.requestAnimationFrame(() => document.querySelector(options.focusSelector)?.focus({ preventScroll: true }));
   }
@@ -1748,6 +1755,12 @@ function bindEvents(view) {
     window.requestAnimationFrame(() => document.querySelector("#journey-has-ticket")?.focus());
   });
   document.querySelector("#close-journey-setup")?.addEventListener("click", closeJourneySetup);
+  document.querySelector("#recovery-dialog")?.addEventListener("close", () => {
+    if (state.activeDialog === "recovery") state.activeDialog = null;
+  });
+  document.querySelector("#journey-setup-dialog")?.addEventListener("close", () => {
+    if (state.activeDialog === "journey-setup") state.activeDialog = null;
+  });
   document.querySelector("#journey-has-ticket")?.addEventListener("change", (event) => {
     const details = document.querySelector("#ticket-setup-details");
     if (details) details.hidden = !event.target.checked;
@@ -2012,16 +2025,19 @@ async function requestAiGuideAnswer(view, rawQuestion) {
 }
 
 function openRecovery() {
+  state.activeDialog = "recovery";
   const dialog = document.querySelector("#recovery-dialog");
   if (dialog && !dialog.open) dialog.showModal();
 }
 
 function openJourneySetup() {
+  state.activeDialog = "journey-setup";
   const dialog = document.querySelector("#journey-setup-dialog");
   if (dialog && !dialog.open) dialog.showModal();
 }
 
 function closeJourneySetup() {
+  state.activeDialog = null;
   const dialog = document.querySelector("#journey-setup-dialog");
   if (dialog?.open) dialog.close();
 }
@@ -2076,6 +2092,7 @@ async function applyJourneySetup(event) {
 }
 
 function closeRecovery() {
+  state.activeDialog = null;
   const dialog = document.querySelector("#recovery-dialog");
   if (dialog?.open) dialog.close();
 }
