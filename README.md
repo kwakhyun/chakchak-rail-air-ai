@@ -58,7 +58,7 @@ KTX와 공항철도 승차권을 운영사별로 나누고 일반·할인·패�
 
 ### 5. 생성형 AI는 판단이 아니라 설명을 담당
 
-열차 선택과 확률 계산은 자체 모델과 규칙 기반 안전 계층이 확정합니다. OpenAI Responses API는 확정된 숫자와 추천 이유를 쉬운 행동 안내로 바꾸는 데만 사용하며, 키나 네트워크가 없으면 검증된 기본 안내로 전환합니다.
+열차 선택과 확률 계산은 자체 모델과 규칙 기반 안전 계층이 확정합니다. OpenAI Responses API는 확정된 숫자와 추천 이유를 쉬운 행동 안내로 바꾸는 데만 사용하며, 키나 네트워크가 없으면 검증된 기본 안내로 전환합니다. 공개 배포에서는 영속적인 호출 제한 장치가 연결된 경우에만 유료 AI 호출을 허용합니다.
 
 ## 시스템 구조
 
@@ -106,7 +106,7 @@ flowchart LR
 - 학습 2,400건, 보정 200건, 고정 검증 800건의 합성 여정으로 학습과 비교를 재현합니다.
 - 별도 시드의 400개 독립 감사에서 P50 2.875분, P90 3.714분, P95 5.901분의 참고분포 MAE를 기록했습니다.
 - 단조성 3,900개 비교, 안전·접근성·제약 최적화 선택, 설명 합계 일치 여부를 검사했습니다.
-- 현재 자동 테스트는 모델, 최적화, 공개데이터 장애 처리, 승차권 보호, 개인정보 경계를 포함한 **51개 시나리오**를 통과합니다.
+- 현재 자동 테스트는 모델, 최적화, 공개데이터 장애 처리, 승차권 보호, 개인정보와 HTTP 보안 경계를 포함한 **57개 시나리오**를 통과합니다. 별도로 Chromium에서 데스크톱·모바일 핵심 흐름 2개를 검증합니다.
 
 > 모든 수치는 같은 시뮬레이터가 만든 참고분포에 대한 결과이며 실제 승객 대상 운영 성능이 아닙니다. 원본 비교 결과는 [`evidence/`](evidence/)와 [`docs/model-card.md`](docs/model-card.md)에 공개합니다.
 
@@ -130,17 +130,20 @@ npm run dev
 |---|---|
 | `OPENAI_API_KEY` | 결과 설명 AI |
 | `OPENAI_MODEL` | Responses API 모델 선택 |
+| `ENABLE_PUBLIC_AI` | 공개 배포 유료 AI 허용 여부. 영속 호출 제한 바인딩이 없으면 `true`여도 기본 안내로 전환 |
 | `DATA_GO_KR_API_KEY` | 승인된 data.go.kr API 공통 키 |
 | `TOUR_API_KEY` | TourAPI 전용 키. 비어 있으면 공통 키 사용 |
 | `KORAIL_OPEN_API_ENABLED` | 승인된 코레일 직접 운행계획 사용 여부 |
 | `CHAKCHAK_VALIDATION_SECRET` | 익명 검증 토큰 서명 |
+| `TRUST_PROXY` | 신뢰할 수 있는 역방향 프록시 뒤에서만 전달 IP 헤더 사용 |
 
 `.env.local`, 운영 기록과 모든 비밀 키는 Git에서 제외됩니다.
 
 ## 검증 명령
 
 ```bash
-npm test                 # 51개 자동 테스트
+npm test                 # 57개 자동 테스트
+npm run test:e2e         # Chromium 데스크톱·모바일 핵심 흐름
 npm run typecheck        # React/Vinext/Worker TypeScript 엄격 검사
 npm run verify           # 필수 파일·문법·전체 테스트 확인
 npm run check            # 타입 검사·테스트·Sites 프로덕션 빌드 일괄 확인
@@ -155,7 +158,7 @@ npm run audit:model      # 독립 시드 모델 감사
 - Runtime: Node.js HTTP server, React/Vite 기반 Sites 배포 어댑터
 - AI/ML: JavaScript Monotonic Quantile GBDT, 단조 확률 보정, 시드 기반 Monte Carlo, 제약 최적화
 - LLM: OpenAI Responses API의 구조화 출력과 오프라인 폴백
-- Quality: Node test runner, 고정 시드 재현 검증, 공개데이터 회로 차단·폴백 테스트
+- Quality: Node test runner, Playwright 브라우저 회귀 테스트, 고정 시드 재현 검증, 공개데이터 회로 차단·폴백 테스트
 
 ## 프로젝트 구조
 
@@ -164,7 +167,7 @@ public/       서비스·발표 화면과 브랜드 에셋
 src/          UI, 자체 모델 추론, 최적화, 승차권 보호
 lib/          공개데이터·OpenAI·익명 검증 서버 모듈
 scripts/      학습, 벤치마크, 감사와 배포 준비 도구
-tests/        모델·API·개인정보·사용자 흐름 테스트
+tests/        모델·API·개인정보 테스트와 Chromium 사용자 흐름 회귀 테스트
 docs/         아키텍처, 모델 카드, 검증·운영 설계
 evidence/     공개 가능한 모델 비교·독립 감사 결과
 server.mjs    로컬 정적 서버와 API

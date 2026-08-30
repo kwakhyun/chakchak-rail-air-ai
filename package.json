@@ -25,9 +25,11 @@
     "pilot:phase": "node scripts/pilot_ops.mjs phase",
     "pilot:export": "node scripts/pilot_ops.mjs export",
     "test": "node --test",
+    "test:e2e": "playwright test",
     "typecheck": "tsc --noEmit",
     "verify": "node scripts/verify.mjs",
-    "check": "npm run typecheck && npm run verify && npm run build:sites"
+    "check": "npm run typecheck && npm run verify && npm run build:sites",
+    "check:ci": "npm run check && npm run test:e2e"
   },
   "engines": {
     "node": ">=22"
@@ -39,6 +41,7 @@
   "devDependencies": {
     "@cloudflare/vite-plugin": "1.54.2",
     "@phosphor-icons/core": "^2.1.1",
+    "@playwright/test": "^1.62.1",
     "@types/node": "22.19.19",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",

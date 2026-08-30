@@ -123,7 +123,9 @@ GPT-5.6 Luna는 OpenAI Responses API를 통해 착착 자체 모델과 안전 �
 - `store: false`로 응답 저장을 요청하지 않음
 - 이름 대신 익명 클라이언트 토큰의 SHA-256 파생 식별자만 `safety_identifier`로 사용
 - 엄격한 JSON Schema로 제목·요약·2~4개 행동단계·관광조정·주의문만 허용
-- 32KB 요청 본문 제한, IP별 분당 10회 제한, 입력 필드 화이트리스트와 길이 제한
+- 쓰기 요청은 `application/json`만 허용하고 실제 읽은 바이트 기준으로 본문을 32KB로 제한. IP별 분당 10회 제한, 호출 제한 저장소 상한, 입력 필드 화이트리스트와 길이 제한 적용
+- 공개 배포는 영속 `PUBLIC_API_RATE_LIMITER` 바인딩이 있을 때만 유료 AI 호출을 활성화하고, 없으면 검증된 기본 안내만 제공
+- CSP, HSTS, 클릭재킹 차단, 권한·참조 정보 제한 헤더를 정적 화면과 API 응답에 동일하게 적용
 - 키 없음, 타임아웃, 비정상 스키마, 상류 오류 시 동일 형식의 검증된 다국어 폴백
 
 ## 서버 API와 배포 범위
@@ -135,6 +137,7 @@ GPT-5.6 Luna는 OpenAI Responses API를 통해 착착 자체 모델과 안전 �
 - `GET /api/health`: AI 모델·키 설정 여부, 공공데이터 설정과 전체 모드
 - `GET /api/data/fusion`: 7개 출처의 정규화 결과, 상태, 확인시각, 공식 URL
 - `POST /api/ai/concierge`: 계산 결과를 4개 언어의 구조화 행동 안내로 설명
+- `POST /api/ai/guide`: 현재 화면과 승차권 보호 근거 안에서 질문에 답변. 공개 유료 호출은 영속 호출 제한이 있을 때만 활성화
 - `POST /api/chakchak/predict`: 자체 모델 버전·지표, 후보별 P50/P90/P95·확률·기여도 워터폴·제약 최적화 결과를 반환
 - `GET /api/validation/status`: 실제 완료 표본, 품질 상태, 증거 단계와 공개 가능한 실측 지표
 - `GET /api/pilot/status`: 모집 전 `READY` 상태와 참여코드 0건을 반환

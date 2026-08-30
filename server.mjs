@@ -5,6 +5,7 @@ import { extname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { loadLocalEnv } from "./lib/env.mjs";
+import { createFixedWindowRateLimiter, PUBLIC_SECURITY_HEADERS } from "./lib/http-security.mjs";
 import { createGuideAnswer, createJourneyGuidance, openAIStatus } from "./lib/openai.mjs";
 import { P2ValidationStore, loadOrCreateP2ValidationSecret } from "./lib/p2-validation-store.mjs";
 import { buildDataFusion, publicDataStatus } from "./lib/public-data.mjs";
@@ -13,8 +14,10 @@ import { chakchakModelStatus, predictChakchakJourney } from "./src/chakchak-ai.j
 const root = fileURLToPath(new URL(".", import.meta.url));
 await loadLocalEnv(root);
 const port = Number.parseInt(process.env.PORT || "4173", 10);
-const aiRateBuckets = new Map();
-const validationRateBuckets = new Map();
+const aiRateLimiter = createFixedWindowRateLimiter({ limit: 10, windowMs: 60_000 });
+const dataRateLimiter = createFixedWindowRateLimiter({ limit: 30, windowMs: 60_000 });
+const predictionRateLimiter = createFixedWindowRateLimiter({ limit: 30, windowMs: 60_000 });
+const validationRateLimiter = createFixedWindowRateLimiter({ limit: 30, windowMs: 60_000 });
 const configuredValidationSecret = process.env.CHAKCHAK_VALIDATION_SECRET;
 const validationSecret = configuredValidationSecret || await loadOrCreateP2ValidationSecret(resolve(root, "runtime/validation/token-secret"));
 const configuredPilotAdminSecret = process.env.CHAKCHAK_PILOT_ADMIN_KEY;
@@ -44,9 +47,9 @@ const mimeTypes = {
 
 function sendJson(response, status, payload) {
   response.writeHead(status, {
+    ...PUBLIC_SECURITY_HEADERS,
     "Content-Type": "application/json; charset=utf-8",
-    "Cache-Control": "no-store",
-    "X-Content-Type-Options": "nosniff"
+    "Cache-Control": "no-store"
   });
   response.end(JSON.stringify(payload));
 }
@@ -70,6 +73,13 @@ function safePath(pathname) {
 }
 
 async function readJsonBody(request, limitBytes = 32_768) {
+  const mediaType = String(request.headers["content-type"] || "").split(";", 1)[0].trim().toLowerCase();
+  if (mediaType !== "application/json" && !mediaType.endsWith("+json")) {
+    const error = new Error("UNSUPPORTED_MEDIA_TYPE");
+    error.statusCode = 415;
+    throw error;
+  }
+
   let size = 0;
   const chunks = [];
   for await (const chunk of request) {
@@ -92,33 +102,25 @@ async function readJsonBody(request, limitBytes = 32_768) {
 }
 
 function clientAddress(request) {
-  const forwarded = request.headers["x-forwarded-for"];
+  const forwarded = process.env.TRUST_PROXY === "true" ? request.headers["x-forwarded-for"] : null;
   const candidate = Array.isArray(forwarded) ? forwarded[0] : forwarded?.split(",")[0];
   return (candidate || request.socket.remoteAddress || "local").trim().slice(0, 80);
 }
 
 function takeAiRateLimit(request) {
-  const now = Date.now();
-  const key = clientAddress(request);
-  const current = aiRateBuckets.get(key);
-  if (!current || now - current.startedAt >= 60_000) {
-    aiRateBuckets.set(key, { startedAt: now, count: 1 });
-    return { allowed: true, remaining: 9 };
-  }
-  current.count += 1;
-  return { allowed: current.count <= 10, remaining: Math.max(0, 10 - current.count) };
+  return aiRateLimiter.take(clientAddress(request));
+}
+
+function takeDataRateLimit(request) {
+  return dataRateLimiter.take(clientAddress(request));
+}
+
+function takePredictionRateLimit(request) {
+  return predictionRateLimiter.take(clientAddress(request));
 }
 
 function takeValidationRateLimit(request) {
-  const now = Date.now();
-  const key = clientAddress(request);
-  const current = validationRateBuckets.get(key);
-  if (!current || now - current.startedAt >= 60_000) {
-    validationRateBuckets.set(key, { startedAt: now, count: 1 });
-    return true;
-  }
-  current.count += 1;
-  return current.count <= 30;
+  return validationRateLimiter.take(clientAddress(request)).allowed;
 }
 
 function pilotAdminAuthorized(request) {
@@ -273,8 +275,14 @@ async function handleApi(request, response, url) {
       sendJson(response, 405, { error: "Method not allowed" });
       return true;
     }
+    const rate = takeDataRateLimit(request);
+    if (!rate.allowed) {
+      response.setHeader("Retry-After", String(rate.retryAfterSeconds || 60));
+      sendJson(response, 429, { error: "요청이 많습니다. 잠시 후 다시 시도해 주세요.", code: "RATE_LIMIT" });
+      return true;
+    }
     const flightId = (url.searchParams.get("flight") || "KE704").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8);
-    const targetDateTime = url.searchParams.get("at") || "2026-08-12T17:05:00+09:00";
+    const targetDateTime = url.searchParams.get("at")?.slice(0, 40) || undefined;
     const fusion = await buildDataFusion({ flightId, targetDateTime });
     sendJson(response, 200, fusion);
     return true;
@@ -283,6 +291,12 @@ async function handleApi(request, response, url) {
   if (url.pathname === "/api/live/arrival") {
     if (request.method !== "GET") {
       sendJson(response, 405, { error: "Method not allowed" });
+      return true;
+    }
+    const rate = takeDataRateLimit(request);
+    if (!rate.allowed) {
+      response.setHeader("Retry-After", String(rate.retryAfterSeconds || 60));
+      sendJson(response, 429, { error: "요청이 많습니다. 잠시 후 다시 시도해 주세요.", code: "RATE_LIMIT" });
       return true;
     }
     const flightId = (url.searchParams.get("flight") || "KE704").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8);
@@ -317,7 +331,7 @@ async function handleApi(request, response, url) {
       });
     } catch (error) {
       sendJson(response, error?.statusCode || 500, {
-        error: error?.statusCode === 413 ? "요청 내용이 너무 깁니다." : error?.statusCode === 400 ? "요청 형식을 확인해 주세요." : "AI 안내를 준비하지 못했습니다.",
+        error: error?.statusCode === 413 ? "요청 내용이 너무 깁니다." : error?.statusCode === 415 ? "JSON 형식의 요청만 받을 수 있습니다." : error?.statusCode === 400 ? "요청 형식을 확인해 주세요." : "AI 안내를 준비하지 못했습니다.",
         code: error?.message || "AI_REQUEST_ERROR"
       });
     }
@@ -347,7 +361,7 @@ async function handleApi(request, response, url) {
       });
     } catch (error) {
       sendJson(response, error?.statusCode || 500, {
-        error: error?.statusCode === 413 ? "질문이 너무 깁니다." : error?.statusCode === 400 ? "질문 내용을 확인해 주세요." : "AI 가이드 답변을 준비하지 못했습니다.",
+        error: error?.statusCode === 413 ? "질문이 너무 깁니다." : error?.statusCode === 415 ? "JSON 형식의 요청만 받을 수 있습니다." : error?.statusCode === 400 ? "질문 내용을 확인해 주세요." : "AI 가이드 답변을 준비하지 못했습니다.",
         code: error?.message || "AI_GUIDE_ERROR"
       });
     }
@@ -359,13 +373,20 @@ async function handleApi(request, response, url) {
       sendJson(response, 405, { error: "Method not allowed" });
       return true;
     }
+    const rate = takePredictionRateLimit(request);
+    if (!rate.allowed) {
+      response.setHeader("Retry-After", String(rate.retryAfterSeconds || 60));
+      sendJson(response, 429, { error: "요청이 많습니다. 잠시 후 다시 시도해 주세요.", code: "RATE_LIMIT" });
+      return true;
+    }
     try {
       const body = await readJsonBody(request);
       const prediction = predictChakchakJourney(whitelistedChakchakInput(body));
       sendJson(response, 200, prediction);
     } catch (error) {
-      sendJson(response, error instanceof RangeError || error instanceof TypeError ? 400 : 500, {
-        error: "착착 자체 모델 입력을 확인해 주세요.",
+      const status = error?.statusCode || (error instanceof RangeError || error instanceof TypeError ? 400 : 500);
+      sendJson(response, status, {
+        error: status === 413 ? "요청 내용이 너무 깁니다." : status === 415 ? "JSON 형식의 요청만 받을 수 있습니다." : "착착 자체 모델 입력을 확인해 주세요.",
         code: error?.message || "CHAKCHAK_MODEL_ERROR"
       });
     }
@@ -532,8 +553,9 @@ const server = createServer(async (request, response) => {
     return;
   }
 
-  if (request.method !== "GET") {
-    sendJson(response, 405, { error: "Method not allowed" });
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    response.setHeader("Allow", "GET, HEAD");
+    sendJson(response, 405, { error: "Method not allowed", code: "METHOD_NOT_ALLOWED" });
     return;
   }
 
@@ -548,12 +570,11 @@ const server = createServer(async (request, response) => {
     if (!fileStats.isFile()) throw new Error("Not a file");
     const body = await readFile(filePath);
     response.writeHead(200, {
+      ...PUBLIC_SECURITY_HEADERS,
       "Content-Type": mimeTypes[extname(filePath)] || "application/octet-stream",
-      "Cache-Control": /\.(?:js|css|html)$/.test(url.pathname) || url.pathname === "/" ? "no-cache" : "public, max-age=300",
-      "X-Content-Type-Options": "nosniff",
-      "Referrer-Policy": "no-referrer"
+      "Cache-Control": /\.(?:js|css|html)$/.test(url.pathname) || url.pathname === "/" ? "no-cache" : "public, max-age=300"
     });
-    response.end(body);
+    response.end(request.method === "HEAD" ? undefined : body);
   } catch {
     sendJson(response, 404, { error: "Not found" });
   }

@@ -8,7 +8,12 @@ function clamp(value, min, max) {
 function datePart(value) {
   return /^\d{4}-\d{2}-\d{2}/.test(String(value || ""))
     ? String(value).slice(0, 10)
-    : "2026-08-12";
+    : new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Seoul",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }).format(new Date());
 }
 
 function timePart(value, fallback = "17:05") {
