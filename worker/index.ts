@@ -224,8 +224,10 @@ const worker = {
     }
 
     const assetUrl = new URL(request.url);
-    if (assetUrl.pathname === "/") assetUrl.pathname = "/index.html";
-    if (assetUrl.pathname === "/presentation" || assetUrl.pathname === "/presentation/") assetUrl.pathname = "/presentation/index.html";
+    if (assetUrl.pathname === "/" || assetUrl.pathname === "/index.html") assetUrl.pathname = "/app-shell.html";
+    if (["/presentation", "/presentation/", "/presentation/index.html"].includes(assetUrl.pathname)) {
+      assetUrl.pathname = "/presentation-shell.html";
+    }
     if (runtimeEnv.ASSETS) {
       const assetResponse = await runtimeEnv.ASSETS.fetch(new Request(assetUrl.toString(), { method: request.method, headers: request.headers }));
       if (assetResponse.status !== 404) return withSecurityHeaders(assetResponse);
