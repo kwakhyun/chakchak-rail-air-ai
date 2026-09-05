@@ -179,7 +179,7 @@ function journeyView(view) {
 
   return `
     <section class="view-heading journey-heading" aria-labelledby="view-title">
-      <div><span class="eyebrow">${context.journeyDateLabel} 이동</span><h1 id="view-title" tabindex="-1">${escapeHtml(view.signals?.origin || demoTrip.flight.originCity)}에서 ${escapeHtml(state.journey.destination)}까지, 한눈에</h1><p>${escapeHtml(view.railPlan.sourceLabel)}</p><button class="button button-soft journey-edit" id="open-journey-setup" type="button">항공편·여행조건 바꾸기</button></div>
+      <div><span class="eyebrow">${context.journeyDateLabel} 이동</span><h1 id="view-title" tabindex="-1">${escapeHtml(view.signals?.origin || demoTrip.flight.originCity)}에서 ${escapeHtml(state.journey.destination)}까지, 한눈에</h1><p>${state.journey.useExampleFlight ? `예시 항공편 ${escapeHtml(state.journey.flightId)} · 도쿄 → 인천 T2 · ${formatTime(state.journey.arrivalAt)} 도착` : escapeHtml(view.railPlan.sourceLabel)}</p><button class="button button-soft journey-edit" id="open-journey-setup" type="button">항공편·여행조건 바꾸기</button></div>
       <div class="journey-heading-visual">
         <span class="data-badge">${dataModeLabel()}</span>
         <img src="/assets/illustrations/rail-air-journey.webp" alt="공항에서 공항철도와 고속열차를 타고 목적지까지 이어지는 여정 그림" />

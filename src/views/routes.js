@@ -348,8 +348,8 @@ function routesView(view) {
   const headingStatus = view.isRecovered ? "대체 일정 후보를 저장했어요" : view.canRecover ? "더 여유 있는 열차를 찾았어요" : "여유 있게 갈 수 있어요";
   return `
     <section class="view-heading routes-visual-heading" aria-labelledby="view-title">
-      <div><span class="eyebrow">다음 열차</span><h1 id="view-title" tabindex="-1">탈 수 있는 열차부터 보여드려요</h1><p class="routes-heading-status"><img src="${ICONS.routeHeading}" alt="" aria-hidden="true" />${headingStatus}</p></div>
-      <p class="schedule-source">${context.journeyDateLabel}<br />${escapeHtml(view.railPlan.sourceLabel)}</p><div class="routes-scenario-picker"><span>다른 상황도 미리 보세요</span><div class="scenario-bar" aria-label="다른 상황 미리 보기">${scenarioButtons()}</div></div>
+      <div><span class="eyebrow">다음 열차</span><h1 id="view-title" tabindex="-1">탈 수 있는 열차부터 보여드려요</h1><p class="routes-heading-status"><img src="${ICONS.routeHeading}" alt="" aria-hidden="true" />${headingStatus}</p><p class="schedule-source">${context.journeyDateLabel} · ${escapeHtml(view.railPlan.sourceLabel)}</p></div>
+      <div class="routes-scenario-picker"><span>다른 상황도 미리 보세요</span><div class="scenario-bar" aria-label="다른 상황 미리 보기">${scenarioButtons()}</div></div>
     </section>
     ${confirmedJourneyBanner(view, "travel")}
     ${aiCommandCenter(view, recommended)}

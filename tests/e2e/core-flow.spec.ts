@@ -46,9 +46,7 @@ test("여행조건부터 지연 재계산과 승차권 보호까지 이어진다
 
 test("모바일 핵심 메뉴와 AI 기본 안내에 가로 넘침이 없다", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  const fusionReady = page.waitForResponse((response) => response.url().includes("/api/data/fusion") && response.ok());
   await page.goto("/");
-  await fusionReady;
   await expect(page.getByRole("navigation", { name: "모바일 주요 메뉴" })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
 
