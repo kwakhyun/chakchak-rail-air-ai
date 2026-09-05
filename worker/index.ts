@@ -1,6 +1,6 @@
 import { compactModelInput } from "../lib/model-input.mjs";
 import handler from "vinext/server/app-router-entry";
-import { createFixedWindowRateLimiter, readJsonBodyLimited, withSecurityHeaders } from "../lib/http-security.mjs";
+import { createFixedWindowRateLimiter, readJsonBodyLimited, staticCacheControl, withSecurityHeaders } from "../lib/http-security.mjs";
 import { createGuideAnswer, createJourneyGuidance, openAIStatus } from "../lib/openai.mjs";
 import { buildDataFusion, publicDataStatus } from "../lib/public-data.mjs";
 import { chakchakModelStatus, predictChakchakJourney } from "../src/chakchak-ai.js";
@@ -207,7 +207,11 @@ const worker = {
     }
     if (runtimeEnv.ASSETS) {
       const assetResponse = await runtimeEnv.ASSETS.fetch(new Request(assetUrl.toString(), { method: request.method, headers: request.headers }));
-      if (assetResponse.status !== 404) return withSecurityHeaders(assetResponse);
+      if (assetResponse.status !== 404) {
+        const response = withSecurityHeaders(assetResponse);
+        if (response.ok || response.status === 304) response.headers.set("Cache-Control", staticCacheControl(assetUrl.pathname));
+        return response;
+      }
     }
     return withSecurityHeaders(await handler.fetch(request, runtimeEnv as any, ctx as any));
   }

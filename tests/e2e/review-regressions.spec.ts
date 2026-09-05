@@ -73,9 +73,8 @@ test("행동 버튼과 확률은 일관되고 모바일 모든 메뉴에 가로 
   await page.goto("/?mode=live");
   const action = page.locator(".possibility-card [data-open-recovery]");
   await expect(action).toBeVisible();
-  const rect = await action.boundingBox();
-  expect(rect!.y).toBeLessThan(720);
-  await page.locator(".journey-model-disclosure > summary").click();
+  await action.scrollIntoViewIfNeeded();
+  await expect(action).toBeInViewport();
   const model = await page.locator(".model-score-card > strong").textContent();
   const card = await page.locator(".confidence-gauge > strong").textContent();
   expect(model?.replace(/\s/g, "")).toBe(card?.replace(/\s/g, ""));
@@ -93,7 +92,7 @@ test("밤에 접속해도 기본값과 시간표 조회는 다음 날을 사용�
   const request = page.waitForRequest(r => r.url().includes("/api/data/fusion?"));
   await page.goto("/?mode=live");
   expect(new URL((await request).url()).searchParams.get("at")).toBe("2030-09-06T17:05:00+09:00");
-  await expect(page.getByRole("heading", { name: /한눈에/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /한눈에/, level: 1 })).toBeVisible();
   await expect(page.getByRole("heading", { name: "연결 가능한 열차를 찾지 못했어요" })).toHaveCount(0);
   await expect(page.locator(".journey-heading .eyebrow")).toContainText("9월 6일");
   await page.getByRole("button", { name: "항공편·여행조건 바꾸기" }).click();
@@ -124,8 +123,8 @@ test("예시 여정은 외부 응답 없이 유지되고 실제 조회로 전환
     return route.fulfill({ json: { ...fusion, sources: [{ id: "incheon-flight", mode: "live", data: { origin: "실제 출발지", scheduledTime: "1630", estimatedTime: "1650", terminal: "P01" } }] } });
   });
   await page.goto("/");
-  await expect(page.locator(".journey-heading")).toContainText("예시 항공편 KE704");
-  await expect(page.locator(".journey-heading")).toContainText("17:05");
+  await expect(page.locator(".trip-card .flight-chip")).toContainText("KE704");
+  await expect(page.locator(".signal-board")).toContainText("17:05");
   await expect(page.locator(".mode-pill")).toHaveText("예시 여정 체험");
   await expect(page.locator(".possibility-card")).toBeVisible();
   expect(requests).toBe(0);
@@ -162,12 +161,21 @@ test("기본 체험은 대체편 저장과 여행 일정까지 이어지고 새�
   expect(liveRequests).toBe(0);
 });
 
-test("접힌 상세 정보의 아이콘과 문구는 모든 화면 폭에서 크기와 간격을 유지한다", async ({ page }) => {
+test("데스크톱은 원래 패널 배치를 유지하고 모바일 상세 정보는 넘치지 않는다", async ({ page }) => {
   await page.goto("/");
   for (const width of [390, 720, 721, 1024, 1280, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     for (const selector of [".journey-signal-disclosure", ".journey-model-disclosure"]) {
       const details = page.locator(selector);
+      if (width > 720) {
+        await expect(details).toHaveAttribute("open", "");
+        await expect(details.locator(":scope > summary")).toBeHidden();
+        await expect(details.locator(".mobile-disclosure-content")).toBeVisible();
+        const panel = await details.boundingBox();
+        const hero = await page.locator(".journey-hero").boundingBox();
+        expect(panel!.y + panel!.height).toBeLessThanOrEqual(hero!.y);
+        continue;
+      }
       for (const open of [false, true]) {
         await details.evaluate((el, value) => { (el as HTMLDetailsElement).open = value; }, open);
         const bounds = await details.locator(":scope > summary").evaluate(el => {
@@ -191,7 +199,6 @@ test("접힌 상세 정보의 아이콘과 문구는 모든 화면 폭에서 크
 
 test("예시 조건과 실제 조회 실패를 구분해 표시한다", async ({ page }) => {
   await page.goto("/");
-  await page.locator(".journey-signal-disclosure > summary").click();
   const board = page.locator(".signal-board");
   await expect(board).toContainText("예시 여정에 적용한 공항과 철도 조건");
   await expect(board).not.toContainText("조회 불가");
@@ -219,4 +226,50 @@ test("저장 없이 여행 일정을 바로 조회하고 열차 조회가 비어
   await expect(page.locator(".travel-place-card")).toContainText("시간 미정");
   await page.setViewportSize({width:390,height:844});
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+});
+
+
+test("모바일에서 펼친 내용은 재계산과 화면 크기 변경 후에도 유지된다", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  const details = page.locator(".journey-signal-disclosure");
+  await details.locator(":scope > summary").click();
+  await page.locator("#open-journey-setup").click();
+  await page.locator("#journey-bags").selectOption("0");
+  await page.getByRole("button", { name: "이 여정으로 계산하기" }).click();
+  await expect(details).toHaveAttribute("open", "");
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await expect(details.locator(":scope > summary")).toBeHidden();
+  await expect(details).toHaveAttribute("open", "");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(details).toHaveAttribute("open", "");
+  await details.locator(":scope > summary").click();
+  await page.locator("#open-journey-setup").click();
+  await page.getByRole("button", { name: "이 여정으로 계산하기" }).click();
+  await expect(details).not.toHaveAttribute("open", "");
+});
+
+test("첫 화면 아이콘은 별도 요청 없이 표시되고 이미지는 재방문 때 재사용된다", async ({ browser, baseURL }) => {
+  // Use native resource timing and caching, without the shared clock or request mocks.
+  const page = await browser.newPage({ baseURL });
+  await page.goto("/");
+  await expect(page.locator(".signal-board")).toBeVisible();
+  await page.evaluate(() => Promise.all([...document.images].map(img => img.decode())));
+  const first = await page.evaluate(() => ({
+    missing: [...document.images].filter(img => !img.naturalWidth).length,
+    requests: performance.getEntriesByType("resource").map(r => r.name),
+    preload: document.querySelector('link[rel="preload"][as="image"]')?.getAttribute("href")
+  }));
+  expect(first.missing).toBe(0);
+  expect(first.requests.filter(url => url.includes("/assets/icons/"))).toEqual([]);
+  expect(first.preload).toBe("/assets/illustrations/rail-air-journey.webp");
+  await page.reload();
+  await expect(page.locator(".signal-board")).toBeVisible();
+  await page.evaluate(() => Promise.all([...document.images].map(img => img.decode())));
+  const images = await page.evaluate(() => performance.getEntriesByType("resource")
+    .filter(r => /\.(webp|png)$/.test(r.name))
+    .map(r => ({ name: r.name, bytes: (r as PerformanceResourceTiming).transferSize })));
+  expect(images.length).toBeGreaterThanOrEqual(2);
+  expect(images.every(img => img.bytes === 0)).toBe(true);
+  await page.close();
 });

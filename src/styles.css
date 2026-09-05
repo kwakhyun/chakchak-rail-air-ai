@@ -9440,12 +9440,6 @@
 .schedule-source { color: var(--text-body); font-size: 13px; line-height: 1.6; }
 
 .model-factor-head span { max-width: 30ch; }
-@media (min-width: 721px) {
-  .journey-heading { margin-bottom: 16px; }
-  .journey-hero { margin-bottom: 20px; }
-  .journey-signal-disclosure, .journey-model-disclosure { margin-bottom: 12px; }
-  .journey-signal-disclosure > summary, .journey-model-disclosure > summary { display: flex; }
-}
 @media (max-width: 720px) {
   .unavailable-journey .button { width: 100%; text-align: center; }
 }
@@ -9458,8 +9452,9 @@
 
 }
 
-/* These disclosures are visible on desktop as well as mobile. */
+/* Compact summaries are mobile-only; desktop keeps the original expanded panels. */
 @layer components {
+ @media (max-width: 720px) {
   :is(.journey-signal-disclosure, .journey-model-disclosure) > summary {
     display: flex;
     min-height: 70px;
@@ -9521,6 +9516,7 @@
     font-weight: 850;
   }
   :is(.journey-signal-disclosure, .journey-model-disclosure) .mobile-disclosure-content { margin-top: 10px; }
+}
 }
 
 @layer components {

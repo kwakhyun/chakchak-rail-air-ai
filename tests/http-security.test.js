@@ -5,8 +5,17 @@ import {
   createFixedWindowRateLimiter,
   defaultTargetDateTime,
   readJsonBodyLimited,
+  staticCacheControl,
   withSecurityHeaders
 } from "../lib/http-security.mjs";
+
+test("이미지는 재사용하고 HTML과 해시 없는 스크립트는 변경을 확인한다", () => {
+  assert.equal(staticCacheControl("/assets/illustrations/rail-air-journey.webp"), "public, max-age=3600");
+  assert.equal(staticCacheControl("/src/app-ABCDEFG2.js"), "public, max-age=31536000, immutable");
+  for (const path of ["/", "/app-shell.html", "/src/app.js", "/api/data/fusion", "/missing"]) {
+    assert.equal(staticCacheControl(path), "no-cache");
+  }
+});
 
 test("실제 읽은 바이트 수가 제한을 넘으면 Content-Length 없이도 거부한다", async () => {
   const request = new Request("https://chakchak.test/api", {

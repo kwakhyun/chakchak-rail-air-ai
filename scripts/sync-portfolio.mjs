@@ -13,7 +13,7 @@ catch (error) {
 
 // Only maintained application files. Never copy secrets, runtime data, Git state or dependencies.
 const roots = ["src", "lib", "worker", "tests", "server.mjs", "package.json", "package-lock.json", "tsconfig.json", "playwright.config.ts", "vite.config.ts", "build",
-  "scripts/verify.mjs", "scripts/prepare-sites.mjs", "scripts/harden-sites-assets.mjs", "scripts/sync-portfolio.mjs",
+  "scripts/build_chakchak_icons.mjs", "scripts/verify.mjs", "scripts/prepare-sites.mjs", "scripts/harden-sites-assets.mjs", "scripts/sync-portfolio.mjs",
   "docs/improvements-2026-09-05.md", "public/index.html", "public/assets/illustrations/rail-air-journey.webp", "public/assets/illustrations/rail-air-journey-3d.webp"];
 
 async function files(path) {

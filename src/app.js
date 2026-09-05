@@ -1,3 +1,4 @@
+import { iconAsset } from "./icons.js";
 import { createJourneyViews } from "./views/journey.js";
 import { createRoutesViews } from "./views/routes.js";
 import { createTravelViews } from "./views/travel.js";
@@ -39,7 +40,7 @@ const timeFormatter = new Intl.DateTimeFormat("ko-KR", {
 const compactScreenQuery = window.matchMedia("(max-width: 720px)");
 const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-const iconAsset = (name) => `/assets/icons/chakchak/${name}.svg`;
+const mobileDisclosureState = new Map();
 const ICONS = Object.freeze({
   navMove: { outline: iconAsset("nav-move-outline"), active: iconAsset("nav-move-active") },
   navTrain: { outline: iconAsset("nav-train-outline"), active: iconAsset("nav-train-active") },
@@ -496,9 +497,9 @@ function confirmedJourneyBanner(view, nextView = "travel") {
 }
 
 function compactDisclosure({ title, description, badge, icon, content, className = "" }) {
-  const open = "";
+  const open = !isCompactScreen() || mobileDisclosureState.get(className) ? " open" : "";
   return `
-    <details class="mobile-disclosure ${className}"${open}>
+    <details id="${className}" data-responsive-disclosure class="mobile-disclosure ${className}"${open}>
       <summary>
         <span class="mobile-disclosure-title"><img src="${icon}" alt="" aria-hidden="true" /><span><strong>${title}</strong><small>${description}</small></span></span>
         <span class="mobile-disclosure-badge">${badge}</span>
@@ -690,6 +691,11 @@ function render(options = {}) {
 }
 
 function bindEvents(view) {
+  app.querySelectorAll("[data-responsive-disclosure]").forEach(details => {
+    details.addEventListener("toggle", () => {
+      if (isCompactScreen()) mobileDisclosureState.set(details.id, details.open);
+    });
+  });
   document.querySelectorAll("[data-view-target]").forEach((button) => {
     button.addEventListener("click", (event) => {
       setActiveView(button.dataset.viewTarget, { focusHeading: event.detail === 0 });
@@ -1318,6 +1324,8 @@ async function loadFusionData(options = {}) {
     if (options.render !== false) render();
   }
 }
+
+compactScreenQuery.addEventListener("change", () => render());
 
 window.addEventListener("hashchange", () => {
   const next = window.location.hash.replace("#", "");

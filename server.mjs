@@ -7,7 +7,7 @@ import { extname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { loadLocalEnv } from "./lib/env.mjs";
-import { createFixedWindowRateLimiter, PUBLIC_SECURITY_HEADERS, readJsonBodyLimited } from "./lib/http-security.mjs";
+import { createFixedWindowRateLimiter, PUBLIC_SECURITY_HEADERS, readJsonBodyLimited, staticCacheControl } from "./lib/http-security.mjs";
 import { createGuideAnswer, createJourneyGuidance, openAIStatus } from "./lib/openai.mjs";
 import { P2ValidationStore, loadOrCreateP2ValidationSecret } from "./lib/p2-validation-store.mjs";
 import { buildDataFusion, publicDataStatus } from "./lib/public-data.mjs";
@@ -526,7 +526,7 @@ const server = createServer(async (request, response) => {
     response.writeHead(200, {
       ...PUBLIC_SECURITY_HEADERS,
       "Content-Type": mimeTypes[extname(filePath)] || "application/octet-stream",
-      "Cache-Control": /\.(?:js|css|html)$/.test(url.pathname) || url.pathname === "/" ? "no-cache" : "public, max-age=300"
+      "Cache-Control": staticCacheControl(url.pathname)
     });
     response.end(request.method === "HEAD" ? undefined : body);
   } catch {

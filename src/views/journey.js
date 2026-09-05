@@ -185,15 +185,32 @@ function journeyView(view) {
 
   return `
     <section class="view-heading journey-heading" aria-labelledby="view-title">
-      <div><span class="eyebrow">${context.journeyDateLabel} 이동</span><h1 id="view-title" tabindex="-1">${escapeHtml(view.signals?.origin || demoTrip.flight.originCity)}에서 ${escapeHtml(state.journey.destination)}까지, 한눈에</h1><p>${state.journey.useExampleFlight ? `예시 항공편 ${escapeHtml(state.journey.flightId)} · 도쿄 → 인천 T2 · ${formatTime(state.journey.arrivalAt)} 도착` : escapeHtml(view.railPlan.sourceLabel)}</p><button class="button button-soft journey-edit" id="open-journey-setup" type="button">항공편·여행조건 바꾸기</button></div>
+      <div><span class="eyebrow">${context.journeyDateLabel} 이동</span><h1 id="view-title" tabindex="-1">${escapeHtml(view.signals?.origin || demoTrip.flight.originCity)}에서 ${escapeHtml(state.journey.destination)}까지, 한눈에</h1><p>복잡한 시간표 대신 지금 무엇을 하면 되는지 알려드려요.</p><button class="button button-soft journey-edit" id="open-journey-setup" type="button">항공편·여행조건 바꾸기</button></div>
       <div class="journey-heading-visual">
         <span class="data-badge">${dataModeLabel()}</span>
-        <img src="/assets/illustrations/rail-air-journey.webp" alt="공항에서 공항철도와 고속열차를 타고 목적지까지 이어지는 여정 그림" />
+        <img src="/assets/illustrations/rail-air-journey.webp" width="780" height="188" fetchpriority="high" decoding="async" alt="공항에서 공항철도와 고속열차를 타고 목적지까지 이어지는 여정 그림" />
       </div>
     </section>
 
     ${confirmedJourneyBanner(view, "travel")}
     ${mobileNowCard(view)}
+    ${compactDisclosure({
+      title: state.journey.useExampleFlight ? "예시 여정의 공항과 철도 조건" : "공항과 철도의 지금 상황",
+      description: "항공·입국장·날씨·공항철도",
+      badge: state.journey.useExampleFlight ? "예시" : `${view.signals?.liveInputCount || 0}/4`,
+      icon: ICONS.journeyLive,
+      content: liveSignalBoard(view),
+      className: "journey-signal-disclosure"
+    })}
+    ${compactDisclosure({
+      title: "착착이 살펴본 근거",
+      description: "예상 도착 시각과 탑승 가능성 확인",
+      badge: `${Math.round(displayedProbability(view, view.activeCandidate))}%`,
+      icon: ICONS.journeyModel,
+      content: chakchakModelPanel(view),
+      className: "journey-model-disclosure"
+    })}
+
     <section class="journey-hero">
       <article class="panel trip-card">
         <div class="trip-card-head">
@@ -218,23 +235,6 @@ function journeyView(view) {
         </div>
       </article>
     </section>
-
-    ${compactDisclosure({
-      title: state.journey.useExampleFlight ? "예시 여정의 공항과 철도 조건" : "공항과 철도의 지금 상황",
-      description: "항공·입국장·날씨·공항철도",
-      badge: state.journey.useExampleFlight ? "예시" : `${view.signals?.liveInputCount || 0}/4`,
-      icon: ICONS.journeyLive,
-      content: liveSignalBoard(view),
-      className: "journey-signal-disclosure"
-    })}
-    ${compactDisclosure({
-      title: "착착이 살펴본 근거",
-      description: "예상 도착 시각과 탑승 가능성 확인",
-      badge: `${Math.round(displayedProbability(view, view.activeCandidate))}%`,
-      icon: ICONS.journeyModel,
-      content: chakchakModelPanel(view),
-      className: "journey-model-disclosure"
-    })}
 
     <section class="journey-detail-grid">
       <article class="panel timeline-card"><div class="panel-header"><div><h2>이동 순서</h2><p>현재 상황부터 ${escapeHtml(state.journey.destination)} 도착까지</p></div><strong class="arrival-time">${formatTime(view.activeKtx.arrival)} 도착</strong></div>${journeyTimeline(view)}</article>

@@ -2,7 +2,7 @@
 export function captureUiState(root) {
   return {
     fields: [...root.querySelectorAll("dialog[open] input, dialog[open] select, #ai-guide-question")].map(el => ({ id: el.id, value: el.value, checked: el.checked })),
-    details: [...root.querySelectorAll("details[id]")].map(el => ({ id: el.id, open: el.open })),
+    details: [...root.querySelectorAll("details[id]:not([data-responsive-disclosure])")].map(el => ({ id: el.id, open: el.open })),
     focus: root.contains(document.activeElement) ? document.activeElement?.id : null,
     selection: document.activeElement?.selectionStart ?? null
   };
