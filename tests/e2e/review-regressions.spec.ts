@@ -188,3 +188,19 @@ test("접힌 상세 정보의 아이콘과 문구는 모든 화면 폭에서 크
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
   }
 });
+
+test("예시 조건과 실제 조회 실패를 구분해 표시한다", async ({ page }) => {
+  await page.goto("/");
+  await page.locator(".journey-signal-disclosure > summary").click();
+  const board = page.locator(".signal-board");
+  await expect(board).toContainText("예시 여정에 적용한 공항과 철도 조건");
+  await expect(board).not.toContainText("조회 불가");
+  await expect(board).not.toContainText("0/4");
+  await expect(board.locator(".signal-node > em")).toHaveText(["예시 조건", "예시 조건", "예시 조건", "예시 조건"]);
+  await page.getByRole("button", { name: "항공편·여행조건 바꾸기" }).click();
+  await page.locator("#journey-live-flight").check();
+  await page.getByRole("button", { name: "이 여정으로 계산하기" }).click();
+  await page.locator(".journey-signal-disclosure").evaluate(el => { (el as HTMLDetailsElement).open = true; });
+  await expect(board).toContainText("조회 불가");
+  await expect(board).toContainText("0/4");
+});

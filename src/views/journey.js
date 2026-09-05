@@ -3,6 +3,7 @@ export function createJourneyViews(context) {
 
 function liveSignalBoard(view) {
   const signals = view.signals;
+  const example = state.journey.useExampleFlight;
   if (state.fusionLoading && !signals) {
     return `<section class="panel signal-board is-loading" aria-busy="true"><div class="signal-board-head"><div><span class="eyebrow">지금 상황</span><h2>공항과 철도 상황을 연결하고 있어요</h2></div><span class="data-pulse">연결 중</span></div><div class="signal-skeleton" aria-hidden="true"><i></i><i></i><i></i><i></i></div></section>`;
   }
@@ -18,7 +19,12 @@ function liveSignalBoard(view) {
     : `${signals.averageRailDelayMinutes >= 0 ? "+" : ""}${signals.averageRailDelayMinutes}분`;
   const liveCount = signals?.liveInputCount || 0;
 
-  const cards = [
+  const cards = example ? [
+    { id: "flight", icon: ICONS.signalFlight, label: "항공 도착", value: state.previewDelayMinutes ? `${state.previewDelayMinutes}분 지연 가정` : "정시 가정", note: `도쿄 → 인천 T2 · ${formatTime(state.journey.arrivalAt)} 도착 예시` },
+    { id: "immigration", icon: ICONS.signalImmigration, label: "입국장", value: view.preset.immigrationMultiplier > 1 ? "혼잡 가정" : "보통 가정", note: "선택한 입국장 혼잡 조건을 반영해요" },
+    { id: "weather", icon: ICONS.signalWeather, label: "공항 날씨", value: "예시 날씨", note: "선택한 날씨 시나리오를 반영해요" },
+    { id: "rail", icon: ICONS.signalRail, label: "공항철도", value: "예시 시간표", note: "예시 항공편과 연결되는 시간표예요" }
+  ] : [
     { id: "flight", icon: ICONS.signalFlight, label: "항공 도착", value: modes.flight === "example" ? "예시 · 정시" : modes.flight === "live" ? flightValue : "조회 불가", note: modes.flight === "example" ? "도쿄 → 인천 T2 · 예시 도착 시각" : modes.flight === "live" ? `${signals.airline} · ${signals.terminal} · 게이트 ${signals.gate}` : "항공편 정보를 확인하지 못했어요" },
     { id: "immigration", icon: ICONS.signalImmigration, label: "입국장", value: modes.immigration === "live" ? immigrationValue : "조회 불가", note: modes.immigration === "live" ? `가장 붐비는 ${signals.busiestHall.hall} 입국장 ${signals.busiestHall.waiting}명` : "입국장 관측값이 없어 체험 입력을 사용해요" },
     { id: "weather", icon: ICONS.signalWeather, label: "공항 날씨", value: modes.weather === "live" ? weatherValue : "조회 불가", note: modes.weather === "live" ? `강수확률 · 바람 ${Math.round(signals.windSpeedKmh)}km/h` : "해당 시각의 기상 관측을 확인하지 못했어요" },
@@ -28,20 +34,20 @@ function liveSignalBoard(view) {
   return `
     <section class="panel signal-board" aria-labelledby="signal-board-title">
       <div class="signal-board-head">
-        <div><span class="eyebrow">지금 상황</span><h2 id="signal-board-title">공항과 철도 상황을 한눈에 확인하세요</h2><p>항공 도착, 입국장, 날씨와 공항철도 운행을 함께 살펴봅니다.</p></div>
-        <div class="coverage-badge" aria-label="여정 신호 ${liveCount}개 중 ${signals?.inputSourceCount || 4}개 실시간"><strong>${liveCount}/${signals?.inputSourceCount || 4}</strong><span>실시간 신호</span></div>
+        <div><span class="eyebrow">${example ? "예시 조건" : "지금 상황"}</span><h2 id="signal-board-title">${example ? "예시 여정에 적용한 공항과 철도 조건" : "공항과 철도 상황을 한눈에 확인하세요"}</h2><p>${example ? "체험을 위한 예시 값입니다. 실제 정보는 여행조건 설정에서 조회할 수 있어요." : "항공 도착, 입국장, 날씨와 공항철도 운행을 함께 살펴봅니다."}</p></div>
+        ${example ? `<div class="coverage-badge"><strong>예시</strong><span>체험 모드</span></div>` : `<div class="coverage-badge" aria-label="전체 ${signals?.inputSourceCount || 4}개 중 ${liveCount}개 실시간"><strong>${liveCount}/${signals?.inputSourceCount || 4}</strong><span>실시간 신호</span></div>`}
       </div>
       <ol class="signal-network">
         ${cards.map((card) => `
-          <li class="signal-node mode-${escapeHtml(modes[card.id] || "demo")}">
+          <li class="signal-node mode-${example ? "example" : escapeHtml(modes[card.id] || "demo")}">
             <div class="signal-icon"><img src="${card.icon}" alt="" aria-hidden="true" /></div>
             <span>${card.label}</span>
             <strong>${escapeHtml(card.value)}</strong>
             <small>${escapeHtml(card.note)}</small>
-            <em>${signalModeLabel(modes[card.id] || "demo")}</em>
+            <em>${example ? "예시 조건" : signalModeLabel(modes[card.id] || "demo")}</em>
           </li>`).join("")}
       </ol>
-      <div class="signal-to-decision"><span>지금 정보</span><i aria-hidden="true"></i><strong>놓칠 가능성 확인</strong><i aria-hidden="true"></i><span>안전한 열차·지역 일정</span></div>
+      <div class="signal-to-decision"><span>${example ? "예시 조건" : "지금 정보"}</span><i aria-hidden="true"></i><strong>놓칠 가능성 확인</strong><i aria-hidden="true"></i><span>안전한 열차·지역 일정</span></div>
     </section>`;
 }
 
@@ -214,9 +220,9 @@ function journeyView(view) {
     </section>
 
     ${compactDisclosure({
-      title: "공항과 철도의 지금 상황",
+      title: state.journey.useExampleFlight ? "예시 여정의 공항과 철도 조건" : "공항과 철도의 지금 상황",
       description: "항공·입국장·날씨·공항철도",
-      badge: `${view.signals?.liveInputCount || 0}/4`,
+      badge: state.journey.useExampleFlight ? "예시" : `${view.signals?.liveInputCount || 0}/4`,
       icon: ICONS.journeyLive,
       content: liveSignalBoard(view),
       className: "journey-signal-disclosure"

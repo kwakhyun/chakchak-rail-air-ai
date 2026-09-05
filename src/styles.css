@@ -9522,3 +9522,7 @@
   }
   :is(.journey-signal-disclosure, .journey-model-disclosure) .mobile-disclosure-content { margin-top: 10px; }
 }
+
+@layer components {
+  .signal-node > small { max-width: 100%; min-width: 0; white-space: normal; overflow-wrap: anywhere; line-height: 1.5; }
+}
