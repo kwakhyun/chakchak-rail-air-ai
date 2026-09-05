@@ -64,6 +64,7 @@ export function buildRailPlan(trip, scheduledArrival, fusion, terminal = "T2", n
   const selected = pairs.filter(pair => { if (seen.has(pair.ktx.id)) return false; seen.add(pair.ktx.id); return true; }).slice(0, 12);
   const allOfficial = observedAirport.length > 0 && officialKtx;
   return {
+    timetable: trains.filter(train => Date.parse(train.departure) > now.getTime()).sort((a, b) => Date.parse(a.departure) - Date.parse(b.departure)),
     airportRail: selected.map(({ arex, ktx }) => ({ ...arex, id: connectionId(arex, ktx) })),
     trains: selected.map(({ arex, ktx }) => ({ ...ktx, recommendedArexId: connectionId(arex, ktx) })),
     sourceLabel: allOfficial ? "공식 운행시간표" : officialKtx ? "KTX 공식 시간표 · 공항철도 체험 시간표" : "체험 시간표 · 실제 운행 확인 필요",

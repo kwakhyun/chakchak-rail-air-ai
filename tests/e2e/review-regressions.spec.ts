@@ -8,6 +8,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("막차 이후에는 추천과 저장 대신 연결 불가 상태가 나온다", async ({ page }) => {
+  await page.clock.setFixedTime(new Date("2030-09-05T14:00:00Z"));
   await page.goto("/");
   await page.getByRole("button", { name: "항공편·여행조건 바꾸기" }).click();
   await page.locator("#journey-arrival").fill("2030-09-05T23:00");
@@ -101,4 +102,17 @@ test("밤에 접속해도 기본값과 시간표 조회는 다음 날을 사용�
   await page.locator(".topnav").getByRole("button", { name: "다음 열차", exact: true }).click();
   await expect(page.locator(".schedule-source")).toContainText("9월 6일");
   await expect(page.getByRole("heading", { name: "탈 수 있는 열차부터 보여드려요" })).toBeVisible();
+});
+
+test("다음 날 공식 열차가 항공 도착보다 빨라도 시간표는 표시한다", async ({ page }) => {
+  await page.clock.setFixedTime(new Date("2030-09-05T12:04:00Z"));
+  await page.route("**/api/data/fusion?**", route => route.fulfill({ json: { ...fusion, sources: [{ id: "tago-train", mode: "live", data: [{ trainNo: "00513", departureStation: "서울", arrivalStation: "전주", departureTime: "20300906121900", arrivalTime: "20300906140100", adultFare: 34600 }] }] } }));
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "서울에서 전주까지 열차 시간표" })).toBeVisible();
+  await expect(page.locator(".timetable-list")).toContainText("12:19");
+  await expect(page.locator(".timetable-list")).toContainText("공식 시간표");
+  await expect(page.getByRole("heading", { name: "연결 가능한 열차를 찾지 못했어요" })).toHaveCount(0);
+  await page.locator(".topnav").getByRole("button", { name: "다음 열차", exact: true }).click();
+  await expect(page.locator(".timetable-list")).toContainText("KTX 00513");
+  await expect(page.locator("#apply-recovery")).toHaveCount(0);
 });

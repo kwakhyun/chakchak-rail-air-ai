@@ -504,6 +504,12 @@ function compactDisclosure({ title, description, badge, icon, content, className
 }
 
 function unavailableJourneyView(view) {
+  const trains = view.railPlan.timetable || [];
+  if (trains.length) return `
+    <section class="view-heading" aria-labelledby="view-title"><div><span class="eyebrow">${viewContext.journeyDateLabel} 출발</span><h1 id="view-title" tabindex="-1">서울에서 ${escapeHtml(state.journey.destination)}까지 열차 시간표</h1><p>서울역 출발 기준입니다. 공항에서 서울역까지의 이동은 별도로 확인해 주세요.</p></div></section>
+    <section class="panel unavailable-journey"><h2>원하는 열차에 맞춰 이동을 준비하세요</h2><p>입력한 항공편과 바로 연결되는 추천편은 없어, 선택한 날짜의 열차 시간표를 먼저 보여드려요.</p><div class="hero-actions"><button class="button button-primary" id="open-journey-setup" type="button">항공편·여행조건 바꾸기</button><a class="button button-soft" href="https://www.letskorail.com/" target="_blank" rel="noreferrer">코레일에서 좌석 확인</a></div></section>
+    <section class="timetable-list" aria-label="선택한 날짜의 열차 시간표">${trains.map(train => `
+      <article class="panel timetable-card"><div><span class="tag">${train.source === "official" ? "공식 시간표" : "체험 시간표 · 실제 운행 확인 필요"}</span><h2>${escapeHtml(train.service)}</h2></div><div class="option-line"><span>서울역 ${formatTime(train.departure)}</span><i aria-hidden="true"></i><span>${escapeHtml(state.journey.destination)}역 ${formatTime(train.arrival)}</span></div><p>${train.fareKnown === false ? "운임은 코레일에서 확인해 주세요." : `${train.price.toLocaleString("ko-KR")}원부터 · 좌석 확인 필요`}</p></article>`).join("")}</section>`;
   return `<section class="view-heading"><span class="eyebrow">연결 여정 확인</span><h1 id="view-title" tabindex="-1">연결 가능한 열차를 찾지 못했어요</h1><p>${escapeHtml(view.railPlan.sourceLabel)}</p></section>
     <section class="panel unavailable-journey" role="status"><h2>당일 이동 계획을 다시 확인해 주세요</h2><p>도착 이후 탑승과 환승 조건을 만족하는 열차가 없습니다. 다음 날 이동이나 다른 교통편을 공식 채널에서 확인해 주세요.</p>
     <div class="hero-actions"><button class="button button-primary" id="open-journey-setup" type="button">항공편·여행조건 바꾸기</button><a class="button button-soft" href="https://www.letskorail.com/" target="_blank" rel="noreferrer">공식 시간표 확인</a></div></section>`;

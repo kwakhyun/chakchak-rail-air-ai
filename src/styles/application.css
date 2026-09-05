@@ -15,3 +15,7 @@
 @media (max-width: 720px) {
   .unavailable-journey .button { width: 100%; text-align: center; }
 }
+
+.timetable-list { display: grid; gap: 16px; margin-top: 24px; }
+.timetable-card { padding: 24px; }
+.timetable-card h2 { margin: 12px 0; }
