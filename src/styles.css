@@ -9457,3 +9457,68 @@
 .example-flight-note { margin: 0 0 12px; color: #536f83; font-size: 13px; line-height: 1.5; }
 
 }
+
+/* These disclosures are visible on desktop as well as mobile. */
+@layer components {
+  :is(.journey-signal-disclosure, .journey-model-disclosure) > summary {
+    display: flex;
+    min-height: 70px;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border: 1px solid #cadde8;
+    border-radius: 17px;
+    background: #fff;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    list-style: none;
+  }
+  :is(.journey-signal-disclosure, .journey-model-disclosure) > summary::-webkit-details-marker { display: none; }
+  :is(.journey-signal-disclosure, .journey-model-disclosure)[open] > summary {
+    border-color: #76b5d6;
+    background: var(--surface-blue);
+  }
+  :is(.journey-signal-disclosure, .journey-model-disclosure) .mobile-disclosure-title {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 10px;
+  }
+  :is(.journey-signal-disclosure, .journey-model-disclosure) .mobile-disclosure-title > img {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    object-fit: contain;
+  }
+  :is(.journey-signal-disclosure, .journey-model-disclosure) .mobile-disclosure-title > span {
+    display: grid;
+    min-width: 0;
+    gap: 4px;
+  }
+  :is(.journey-signal-disclosure, .journey-model-disclosure) .mobile-disclosure-title strong {
+    color: var(--text-strong);
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  :is(.journey-signal-disclosure, .journey-model-disclosure) .mobile-disclosure-title small {
+    color: var(--text-muted);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  :is(.journey-signal-disclosure, .journey-model-disclosure) .mobile-disclosure-badge {
+    display: inline-flex;
+    flex: 0 0 auto;
+    min-width: 44px;
+    min-height: 32px;
+    padding-inline: 8px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: var(--surface-blue);
+    color: var(--brand-rail);
+    font-size: 12px;
+    font-weight: 850;
+  }
+  :is(.journey-signal-disclosure, .journey-model-disclosure) .mobile-disclosure-content { margin-top: 10px; }
+}

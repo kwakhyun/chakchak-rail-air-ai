@@ -161,3 +161,30 @@ test("기본 체험은 대체편 저장과 여행 일정까지 이어지고 새�
   }
   expect(liveRequests).toBe(0);
 });
+
+test("접힌 상세 정보의 아이콘과 문구는 모든 화면 폭에서 크기와 간격을 유지한다", async ({ page }) => {
+  await page.goto("/");
+  for (const width of [390, 720, 721, 1024, 1280, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const selector of [".journey-signal-disclosure", ".journey-model-disclosure"]) {
+      const details = page.locator(selector);
+      for (const open of [false, true]) {
+        await details.evaluate((el, value) => { (el as HTMLDetailsElement).open = value; }, open);
+        const bounds = await details.locator(":scope > summary").evaluate(el => {
+          const rect = (s: string) => el.querySelector(s)!.getBoundingClientRect();
+          const icon = rect("img"), title = rect("strong"), description = rect("small"), badge = rect(".mobile-disclosure-badge");
+          return { iconWidth: icon.width, iconHeight: icon.height, height: el.getBoundingClientRect().height,
+            gap: description.top - title.bottom, titleLeft: title.left, iconRight: icon.right, badgeLeft: badge.left, textRight: Math.max(title.right, description.right) };
+        });
+        expect(bounds.iconWidth).toBe(36);
+        expect(bounds.iconHeight).toBe(36);
+        expect(bounds.height).toBeLessThan(120);
+        expect(bounds.gap).toBeGreaterThanOrEqual(2);
+        expect(bounds.titleLeft).toBeGreaterThan(bounds.iconRight);
+        expect(bounds.badgeLeft).toBeGreaterThan(bounds.textRight);
+      }
+      await details.evaluate(el => { (el as HTMLDetailsElement).open = false; });
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
+  }
+});
