@@ -116,3 +116,18 @@ test("다음 날 공식 열차가 항공 도착보다 빨라도 시간표는 표
   await expect(page.locator(".timetable-list")).toContainText("KTX 00513");
   await expect(page.locator("#apply-recovery")).toHaveCount(0);
 });
+
+test("기본 예시 항공편은 실시간 응답으로 바뀌지 않고 실제 조회로 전환할 수 있다", async ({ page }) => {
+  await page.route("**/api/data/fusion?**", route => route.fulfill({ json: { ...fusion, sources: [{ id: "incheon-flight", mode: "live", data: { origin: "실제 출발지", scheduledTime: "1630", estimatedTime: "1650", terminal: "P01" } }] } }));
+  await page.goto("/");
+  await expect(page.locator(".example-flight-note")).toContainText("KE704");
+  await expect(page.locator(".example-flight-note")).toContainText("17:05");
+  await expect(page.locator("#view-title")).toContainText("도쿄");
+  await page.locator(".journey-signal-disclosure > summary").click();
+  await expect(page.locator(".signal-network")).toContainText("예시 · 정시");
+  await page.getByRole("button", { name: "항공편·여행조건 바꾸기" }).click();
+  await page.locator("#journey-live-flight").check();
+  await page.getByRole("button", { name: "이 여정으로 계산하기" }).click();
+  await expect(page.locator(".example-flight-note")).toHaveCount(0);
+  await expect(page.locator("#view-title")).toContainText("실제 출발지");
+});

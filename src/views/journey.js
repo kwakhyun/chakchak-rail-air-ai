@@ -19,7 +19,7 @@ function liveSignalBoard(view) {
   const liveCount = signals?.liveInputCount || 0;
 
   const cards = [
-    { id: "flight", icon: ICONS.signalFlight, label: "항공 도착", value: modes.flight === "live" ? flightValue : "조회 불가", note: modes.flight === "live" ? `${signals.airline} · ${signals.terminal} · 게이트 ${signals.gate}` : "항공편 정보를 확인하지 못했어요" },
+    { id: "flight", icon: ICONS.signalFlight, label: "항공 도착", value: modes.flight === "example" ? "예시 · 정시" : modes.flight === "live" ? flightValue : "조회 불가", note: modes.flight === "example" ? "도쿄 → 인천 T2 · 예시 도착 시각" : modes.flight === "live" ? `${signals.airline} · ${signals.terminal} · 게이트 ${signals.gate}` : "항공편 정보를 확인하지 못했어요" },
     { id: "immigration", icon: ICONS.signalImmigration, label: "입국장", value: modes.immigration === "live" ? immigrationValue : "조회 불가", note: modes.immigration === "live" ? `가장 붐비는 ${signals.busiestHall.hall} 입국장 ${signals.busiestHall.waiting}명` : "입국장 관측값이 없어 체험 입력을 사용해요" },
     { id: "weather", icon: ICONS.signalWeather, label: "공항 날씨", value: modes.weather === "live" ? weatherValue : "조회 불가", note: modes.weather === "live" ? `강수확률 · 바람 ${Math.round(signals.windSpeedKmh)}km/h` : "해당 시각의 기상 관측을 확인하지 못했어요" },
     { id: "rail", icon: ICONS.signalRail, label: "공항철도", value: railValue, note: signals?.railObservationCount ? `운행 관측 ${signals.railObservationCount}건 · 연결 시간표 별도 확인` : "검증된 시간표 사용" }

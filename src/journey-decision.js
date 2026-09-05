@@ -9,7 +9,8 @@ export function createJourneyKey(journey) {
     journey?.destination || "",
     Number(journey?.checkedBags || 0),
     journey?.mobility || "standard",
-    Boolean(journey?.largeLuggage)
+    Boolean(journey?.largeLuggage),
+    Boolean(journey?.useExampleFlight)
   ].join("|");
 }
 

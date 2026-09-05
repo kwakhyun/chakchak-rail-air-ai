@@ -19,3 +19,5 @@
 .timetable-list { display: grid; gap: 16px; margin-top: 24px; }
 .timetable-card { padding: 24px; }
 .timetable-card h2 { margin: 12px 0; }
+
+.example-flight-note { margin: 0 0 12px; color: #536f83; font-size: 13px; line-height: 1.5; }

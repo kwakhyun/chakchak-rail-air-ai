@@ -1,3 +1,5 @@
+import { demoTrip } from "./data.js";
+
 const KST_OFFSET = "+09:00";
 const DAY_MS = 86_400_000;
 
@@ -81,6 +83,18 @@ function railDelayMinutes(rows) {
   return Math.round(delays.reduce((sum, value) => sum + value, 0) / delays.length);
 }
 
+export function withExampleFlight(fusion, arrivalAt) {
+  const clock = timePart(arrivalAt).replace(":", "");
+  const sources = (fusion.sources || []).filter(item => item.id !== "incheon-flight");
+  sources.unshift({ id: "incheon-flight", mode: "example", data: {
+    flightId: demoTrip.flight.flightId, origin: demoTrip.flight.originCity,
+    airline: "대한항공", scheduledTime: clock, estimatedTime: clock,
+    terminal: "P03", gate: demoTrip.flight.gate, carousel: demoTrip.flight.carousel, status: "예시"
+  } });
+  const live = sources.filter(item => item.mode === "live").length;
+  return { ...fusion, sources, overallMode: "hybrid", sourceSummary: { ...fusion.sourceSummary, live } };
+}
+
 export function deriveJourneySignals(fusion, fallbackArrival) {
   const flightSource = source(fusion, "incheon-flight");
   const immigrationSource = source(fusion, "incheon-immigration");
@@ -89,7 +103,7 @@ export function deriveJourneySignals(fusion, fallbackArrival) {
   const tourismSource = source(fusion, "tour-api");
   const weatherSource = source(fusion, "open-weather");
 
-  const flight = hasData(flightSource) ? flightSource.data : null;
+  const flight = hasData(flightSource) || flightSource?.mode === "example" ? flightSource.data : null;
   const immigrationRows = hasData(immigrationSource) ? immigrationSource.data : [];
   const railRows = hasData(railSource) ? railSource.data : [];
   const tourismPlaces = hasData(tourismSource) ? tourismSource.data : [];

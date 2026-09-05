@@ -18,6 +18,7 @@ import {
 } from "./journey-decision.js";
 import {
   deriveJourneySignals,
+  withExampleFlight,
   fromDateTimeLocalValue,
   nextDayArrival,
   toDateTimeLocalValue
@@ -121,6 +122,7 @@ const hashView = window.location.hash.replace("#", "");
 const initialArrival = nextDayArrival("17:05");
 const initialJourney = {
   flightId: demoTrip.flight.flightId,
+  useExampleFlight: true,
   arrivalAt: initialArrival,
   destination: demoTrip.destination.city,
   stayNights: demoTrip.destination.stayNights,
@@ -349,7 +351,7 @@ function stageRows(simulation) {
 }
 
 function signalModeLabel(mode) {
-  return mode === "live" ? "최신 정보" : "조회 불가 · 체험 입력";
+  return mode === "live" ? "최신 정보" : mode === "example" ? "예시 항공편" : "조회 불가 · 체험 입력";
 }
 
 function navButtons(className = "") {
@@ -614,7 +616,7 @@ function render(options = {}) {
       </header>
     </div>
 
-    <main id="main" class="app-shell view-shell">${activeContent(view)}</main>
+    <main id="main" class="app-shell view-shell">${state.journey.useExampleFlight ? `<p class="example-flight-note">예시 항공편 ${escapeHtml(state.journey.flightId)} · 도쿄 → 인천 T2 · ${viewContext.journeyDateLabel} ${formatTime(state.journey.arrivalAt)} 도착 예정</p>` : ""}${activeContent(view)}</main>
 
     ${aiGuideOverlay(view)}
 
@@ -633,6 +635,7 @@ function render(options = {}) {
           <label><span>지역 목적지</span><select id="journey-destination" name="destination"><option value="전주" selected>전주 · 현재 이용 가능</option><option disabled>부산 · 지원 준비 중</option><option disabled>강릉 · 지원 준비 중</option></select></label>
           <label><span>위탁수하물</span><select id="journey-bags" name="bags"><option value="0" ${state.journey.checkedBags === 0 ? "selected" : ""}>없음</option><option value="1" ${state.journey.checkedBags === 1 ? "selected" : ""}>1개</option><option value="2" ${state.journey.checkedBags >= 2 ? "selected" : ""}>2개 이상</option></select></label>
         </div>
+        <label class="setup-hint"><input id="journey-live-flight" type="checkbox" ${state.journey.useExampleFlight ? "" : "checked"} /> 실제 항공편 정보 조회</label>
         <fieldset class="setup-options"><legend>이동할 때 필요한 도움</legend><label><input id="journey-mobility" type="checkbox" ${state.journey.mobility !== "standard" ? "checked" : ""} /><span>천천히 걷거나 엘리베이터 동선이 필요해요</span></label><label><input id="journey-large-luggage" type="checkbox" ${state.journey.largeLuggage ? "checked" : ""} /><span>큰 짐이 있어요</span></label></fieldset>
         <fieldset class="ticket-setup-card">
           <legend>예매한 승차권</legend>
@@ -1053,6 +1056,7 @@ async function applyJourneySetup(event) {
   state.journey = {
     ...state.journey,
     flightId,
+    useExampleFlight: flightId === demoTrip.flight.flightId && !document.querySelector("#journey-live-flight")?.checked,
     arrivalAt: fromDateTimeLocalValue(arrivalValue, state.journey.arrivalAt),
     destination: document.querySelector("#journey-destination")?.value || "전주",
     checkedBags: Number(document.querySelector("#journey-bags")?.value || 0),
@@ -1284,8 +1288,8 @@ async function loadFusionData(options = {}) {
     if (!response.ok) throw new Error("FUSION_RESPONSE_ERROR");
     const fusion = await response.json();
     if (!request.isCurrent()) return;
-    state.fusion = fusion;
-    state.signals = deriveJourneySignals(fusion, requestedArrival);
+    state.fusion = state.journey.useExampleFlight ? withExampleFlight(fusion, requestedArrival) : fusion;
+    state.signals = deriveJourneySignals(state.fusion, requestedArrival);
     state.dataMode = state.fusion.overallMode === "live"
       ? "live-ready"
       : state.fusion.sourceSummary?.live > 0 ? "hybrid-demo" : "offline-demo";
