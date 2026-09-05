@@ -207,6 +207,11 @@ export function todayArrival(hourMinute = "17:05", now = new Date()) {
   return `${date}T${hourMinute}:00${KST_OFFSET}`;
 }
 
+// Advance from the Korean calendar date, independently of the browser timezone.
+export function nextDayArrival(hourMinute = "17:05", now = new Date()) {
+  return todayArrival(hourMinute, new Date(now.getTime() + DAY_MS));
+}
+
 export function toDateTimeLocalValue(value) {
   return `${datePart(value)}T${timePart(value)}`;
 }

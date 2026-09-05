@@ -126,7 +126,7 @@ function journeyTimeline(view) {
     [`${state.journey.destination} 도착`, formatTime(view.activeKtx.arrival), ""]
   ];
   return `
-    <ol class="timeline" aria-label="오늘 이동 단계">
+    <ol class="timeline" aria-label="선택한 날짜의 이동 단계">
       ${items.map((item, index) => `
         <li class="timeline-step ${item[2]}">
           <span class="timeline-dot">${index + 1}</span>
@@ -179,7 +179,7 @@ function journeyView(view) {
 
   return `
     <section class="view-heading journey-heading" aria-labelledby="view-title">
-      <div><span class="eyebrow">오늘 이동</span><h1 id="view-title" tabindex="-1">${escapeHtml(view.signals?.origin || demoTrip.flight.originCity)}에서 ${escapeHtml(state.journey.destination)}까지, 한눈에</h1><p>${escapeHtml(view.railPlan.sourceLabel)}</p><button class="button button-soft journey-edit" id="open-journey-setup" type="button">항공편·여행조건 바꾸기</button></div>
+      <div><span class="eyebrow">${context.journeyDateLabel} 이동</span><h1 id="view-title" tabindex="-1">${escapeHtml(view.signals?.origin || demoTrip.flight.originCity)}에서 ${escapeHtml(state.journey.destination)}까지, 한눈에</h1><p>${escapeHtml(view.railPlan.sourceLabel)}</p><button class="button button-soft journey-edit" id="open-journey-setup" type="button">항공편·여행조건 바꾸기</button></div>
       <div class="journey-heading-visual">
         <span class="data-badge">${dataModeLabel()}</span>
         <img src="/assets/illustrations/rail-air-journey.webp" alt="공항에서 공항철도와 고속열차를 타고 목적지까지 이어지는 여정 그림" />
@@ -191,7 +191,7 @@ function journeyView(view) {
     <section class="journey-hero">
       <article class="panel trip-card">
         <div class="trip-card-head">
-          <div><span class="flight-chip">${escapeHtml(state.journey.flightId)} · ${escapeHtml(view.signals?.origin || demoTrip.flight.originCity)} 출발</span><h2>오늘 이동 일정</h2></div>
+          <div><span class="flight-chip">${escapeHtml(state.journey.flightId)} · ${escapeHtml(view.signals?.origin || demoTrip.flight.originCity)} 출발</span><h2>${context.journeyDateLabel} 이동 일정</h2></div>
           <span class="status-pill status-${tone}">${riskLabel(activeRiskLevel)}</span>
         </div>
         ${routeSteps(view)}

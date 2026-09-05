@@ -349,7 +349,7 @@ function routesView(view) {
   return `
     <section class="view-heading routes-visual-heading" aria-labelledby="view-title">
       <div><span class="eyebrow">다음 열차</span><h1 id="view-title" tabindex="-1">탈 수 있는 열차부터 보여드려요</h1><p class="routes-heading-status"><img src="${ICONS.routeHeading}" alt="" aria-hidden="true" />${headingStatus}</p></div>
-      <p class="schedule-source">${escapeHtml(view.railPlan.sourceLabel)}</p><div class="routes-scenario-picker"><span>다른 상황도 미리 보세요</span><div class="scenario-bar" aria-label="다른 상황 미리 보기">${scenarioButtons()}</div></div>
+      <p class="schedule-source">${context.journeyDateLabel}<br />${escapeHtml(view.railPlan.sourceLabel)}</p><div class="routes-scenario-picker"><span>다른 상황도 미리 보세요</span><div class="scenario-bar" aria-label="다른 상황 미리 보기">${scenarioButtons()}</div></div>
     </section>
     ${confirmedJourneyBanner(view, "travel")}
     ${aiCommandCenter(view, recommended)}

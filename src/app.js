@@ -19,7 +19,7 @@ import {
 import {
   deriveJourneySignals,
   fromDateTimeLocalValue,
-  todayArrival,
+  nextDayArrival,
   toDateTimeLocalValue
 } from "./live-journey.js";
 import { TICKET_TYPES } from "./ticket-protection.js";
@@ -118,7 +118,7 @@ const navigation = Object.freeze([
 const primaryNavigation = Object.freeze(navigation.filter((item) => item.id !== "about"));
 
 const hashView = window.location.hash.replace("#", "");
-const initialArrival = todayArrival("17:05");
+const initialArrival = nextDayArrival("17:05");
 const initialJourney = {
   flightId: demoTrip.flight.flightId,
   arrivalAt: initialArrival,
@@ -206,6 +206,9 @@ const viewContext = {
   get displayedRiskLevel() { return displayedRiskLevel; },
   get escapeHtml() { return escapeHtml; },
   get formatPercent() { return formatPercent; },
+  get journeyDateLabel() {
+    return new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", month: "long", day: "numeric", weekday: "short" }).format(new Date(state.journey.arrivalAt));
+  },
   get formatTime() { return formatTime; },
   get formatTimeAfterMinutes() { return formatTimeAfterMinutes; },
   get impactCards() { return impactCards; },

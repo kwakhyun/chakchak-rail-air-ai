@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { demoTrip } from "../src/data.js";
-import { deriveJourneySignals, rebaseRailPlan } from "../src/live-journey.js";
+import { deriveJourneySignals, rebaseRailPlan, nextDayArrival } from "../src/live-journey.js";
 
 test("live public data becomes explicit journey-decision signals", () => {
   const signals = deriveJourneySignals({
@@ -52,4 +52,10 @@ test("fallback rail schedule rebases to the selected arrival date", () => {
   assert.equal(rail.airportRail[0].departure, "2026-08-04T18:48:00+09:00");
   assert.equal(rail.trains[0].arrival, "2026-08-04T21:54:00+09:00");
   assert.equal(rail.trains.at(-1).arrival, "2026-08-05T00:21:00+09:00");
+});
+
+test("default arrival uses tomorrow in Korea across midnight and year boundaries", () => {
+  assert.equal(nextDayArrival("17:05", new Date("2026-09-05T12:04:00Z")), "2026-09-06T17:05:00+09:00");
+  assert.equal(nextDayArrival("17:05", new Date("2026-09-05T15:01:00Z")), "2026-09-07T17:05:00+09:00");
+  assert.equal(nextDayArrival("17:05", new Date("2026-12-31T14:59:00Z")), "2027-01-01T17:05:00+09:00");
 });

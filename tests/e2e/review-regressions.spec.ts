@@ -86,3 +86,19 @@ test("행동 버튼과 확률은 일관되고 모바일 모든 메뉴에 가로 
   await page.getByRole("button", { name: "서비스 안내", exact: true }).click();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
 });
+
+test("밤에 접속해도 기본값과 시간표 조회는 다음 날을 사용한다", async ({ page }) => {
+  await page.clock.setFixedTime(new Date("2030-09-05T12:04:00Z"));
+  const request = page.waitForRequest(r => r.url().includes("/api/data/fusion?"));
+  await page.goto("/");
+  expect(new URL((await request).url()).searchParams.get("at")).toBe("2030-09-06T17:05:00+09:00");
+  await expect(page.getByRole("heading", { name: /한눈에/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "연결 가능한 열차를 찾지 못했어요" })).toHaveCount(0);
+  await expect(page.locator(".journey-heading .eyebrow")).toContainText("9월 6일");
+  await page.getByRole("button", { name: "항공편·여행조건 바꾸기" }).click();
+  await expect(page.locator("#journey-arrival")).toHaveValue("2030-09-06T17:05");
+  await page.getByRole("button", { name: "취소", exact: true }).click();
+  await page.locator(".topnav").getByRole("button", { name: "다음 열차", exact: true }).click();
+  await expect(page.locator(".schedule-source")).toContainText("9월 6일");
+  await expect(page.getByRole("heading", { name: "탈 수 있는 열차부터 보여드려요" })).toBeVisible();
+});
