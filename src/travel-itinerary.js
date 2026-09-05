@@ -25,7 +25,19 @@ export function buildTravelActivities(scheduledArrival, places = []) {
   }));
 }
 
+// Preview the recommended train's itinerary before the user saves a replacement.
+export function travelPreview(view) {
+  if (view.noSafeCandidate) return view;
+  const plans = view.chakchakAi.optimization.candidates;
+  if (plans.some(p => p.id === view.activeCandidate.id && p.feasible && p.itinerary.items.length)) return view;
+  const plan = plans.find(p => p.id === view.recovery.id && p.feasible && p.itinerary.items.length);
+  const train = plan && view.railPlan.trains.find(t => t.recommendedArexId === plan.id);
+  if (!train) return view;
+  return { ...view, activeCandidate: view.recovery, activeKtx: train, isTravelPreview: true };
+}
+
 export function plannedTravelItems(view, scheduledArrival) {
+  view = travelPreview(view);
   if (view.noSafeCandidate) return [];
   const plan = view.chakchakAi.optimization.candidates.find(c => c.id === view.activeCandidate.id);
   if (!plan?.feasible) return [];

@@ -5,7 +5,7 @@ import { compactModelInput } from "../lib/model-input.mjs";
 import { buildRailPlan } from "../src/rail-plan.js";
 import { demoTrip } from "../src/data.js";
 import { createJourneyModel } from "../src/journey-model.js";
-import { plannedTravelItems } from "../src/travel-itinerary.js";
+import { plannedTravelItems, travelPreview } from "../src/travel-itinerary.js";
 import { createLatestRequest } from "../src/api-client.js";
 
 const at = "2030-09-05T17:05:00+09:00";
@@ -100,4 +100,15 @@ test("server and Worker share terminal, price and itinerary constraints without 
   assert.equal(input.candidates[0].reservationAvailable, false);
   assert.equal(input.preferences.maxPrice, 30000);
   assert.equal(input.activities[0].required, true);
+});
+
+test("travel can be previewed before saving a replacement train", () => {
+  const current = state();
+  const view = createJourneyModel(current).getViewModel();
+  const preview = travelPreview(view);
+  const items = plannedTravelItems(view, current.journey.arrivalAt);
+  assert.ok(items.length > 0);
+  assert.ok(items.every(item => Date.parse(item.startTime) > Date.parse(preview.activeKtx.arrival)));
+  assert.equal(current.confirmedJourney, null);
+  assert.equal(view.activeCandidate.id, view.primary.id);
 });

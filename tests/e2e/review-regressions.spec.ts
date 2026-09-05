@@ -204,3 +204,19 @@ test("예시 조건과 실제 조회 실패를 구분해 표시한다", async ({
   await expect(board).toContainText("조회 불가");
   await expect(board).toContainText("0/4");
 });
+
+test("저장 없이 여행 일정을 바로 조회하고 열차 조회가 비어도 장소와 지도를 볼 수 있다", async ({ page }) => {
+  await page.goto("/#travel");
+  await expect(page.locator(".travel-place-card")).toHaveCount(3);
+  await expect(page.locator("body")).not.toContainText("방문 일정을 확인해 주세요");
+  await expect(page.locator(".travel-plan-notice")).toContainText("추천편 기준 미리보기");
+  await page.locator(".travel-place-card > summary").first().click();
+  await expect(page.getByRole("link", { name: "지도에서 장소 확인" }).first()).toHaveAttribute("href", /map.naver.com/);
+  await page.route("**/api/data/fusion?**", route => route.fulfill({ json: { ...fusion, sources: [{id: "tago-train", mode: "unavailable", data: []}, {id: "tour-api", mode: "live", data: [{contentId: "123", title: "조회한 전주 관광지", address: "전주시"}]}] } }));
+  await page.goto("/?mode=live#travel");
+  await expect(page.locator("#view-title")).toHaveText("전주에서 가볼 만한 곳");
+  await expect(page.locator(".travel-place-card")).toContainText("조회한 전주 관광지");
+  await expect(page.locator(".travel-place-card")).toContainText("시간 미정");
+  await page.setViewportSize({width:390,height:844});
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+});

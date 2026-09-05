@@ -9526,3 +9526,10 @@
 @layer components {
   .signal-node > small { max-width: 100%; min-width: 0; white-space: normal; overflow-wrap: anywhere; line-height: 1.5; }
 }
+
+@layer components {
+  .travel-plan-notice { padding: 20px 24px; margin-bottom: 20px; }
+  .travel-plan-notice h2 { margin-bottom: 8px; font-size: 20px; }
+  .travel-plan-notice p { line-height: 1.6; color: var(--text-muted); }
+  .travel-plan-notice .button { margin-top: 16px; }
+}

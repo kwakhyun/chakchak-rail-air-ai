@@ -520,7 +520,7 @@ function unavailableJourneyView(view) {
 }
 
 function activeContent(view) {
-  if (view.noSafeCandidate && ["journey", "routes", "travel"].includes(state.activeView)) return unavailableJourneyView(view);
+  if (view.noSafeCandidate && ["journey", "routes"].includes(state.activeView)) return unavailableJourneyView(view);
   if (state.activeView === "routes") return routesView(view);
   if (state.activeView === "travel") return travelView(view);
   if (state.activeView === "validation") return validationView(view);

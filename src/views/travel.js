@@ -1,3 +1,5 @@
+import { travelPreview } from "../travel-itinerary.js";
+
 export function createTravelViews(context) {
   const { ICONS, confirmedJourneyBanner, escapeHtml, formatTime, plannedTravelItems, state, travelVisualAssets } = context;
 
@@ -34,7 +36,7 @@ function travelGapLabel(minutes) {
 
 function travelHero(view, items) {
   const firstItem = items[0];
-  if (!firstItem) return `<section class="panel"><h2>방문 일정을 확인해 주세요</h2><p>현재 도착 시각과 조건에 맞는 방문 일정을 찾지 못했습니다.</p></section>`;
+  if (!firstItem) return "";
   const arrivalTime = formatTime(view.activeKtx.arrival);
   const gap = Math.round((Date.parse(firstItem.startTime) - Date.parse(view.activeKtx.arrival)) / 60_000);
   const heroTitle = view.isRecovered
@@ -106,11 +108,19 @@ function travelPlanSection(view, items) {
 
 
 function travelView(view) {
+  view = travelPreview(view);
   const hasLiveTourism = Boolean(view.signals?.tourismPlaces?.length);
   const items = travelItemsFor(view);
+  if (!items.length) {
+    const places = view.activities.map((item, index) => ({ ...item, category: travelCategory(item.contentType, index), dayLabel: "방문 후보", time: "시간 미정", status: "위치와 영업시간 확인", reason: "열차 도착 시각을 정한 뒤 방문 시간을 안내합니다. 장소 정보와 지도는 먼저 확인할 수 있어요." }));
+    return `<section class="view-heading"><div><span class="eyebrow">여행 일정</span><h1 id="view-title" tabindex="-1">${escapeHtml(state.journey.destination)}에서 가볼 만한 곳</h1><p>${hasLiveTourism ? "조회한 관광지 정보를 먼저 확인하세요." : "대표 장소를 먼저 둘러보세요."}</p></div></section>
+      <section class="panel travel-plan-notice"><h2>장소부터 확인해 보세요</h2><p>연결 열차를 정하면 도착 시각에 맞춰 방문 일정을 안내합니다.</p><button class="button button-soft" type="button" data-view-target="routes">열차 시간표 확인</button></section>
+      <div class="travel-place-grid">${places.map(travelPlaceCard).join("")}</div>`;
+  }
   return `
     <section class="view-heading travel-visual-heading" aria-labelledby="view-title"><div><span class="eyebrow">여행 일정</span><h1 id="view-title" tabindex="-1">열차가 달라져도 ${escapeHtml(state.journey.destination)} 여행은 이어져요</h1><p>새 도착 시간에 맞춰 무리 없는 지역 일정을 다시 연결해요.</p></div><span class="status-pill status-${view.isRecovered ? "watch" : "safe"}">${view.isRecovered ? "대체 일정" : hasLiveTourism ? "공공 관광정보" : "체험 일정"}</span></section>
     ${confirmedJourneyBanner(view, "journey")}
+    ${view.isTravelPreview ? `<section class="panel travel-plan-notice"><p><strong>${escapeHtml(view.activeKtx.service)} 추천편 기준 미리보기</strong> · ${formatTime(view.activeKtx.arrival)} 도착 이후의 일정입니다. 열차 선택은 변경되지 않습니다.</p></section>` : ""}
     ${travelHero(view, items)}
     ${travelReplanStrip(view, hasLiveTourism)}
     ${travelPlanSection(view, items)}
