@@ -1,3 +1,4 @@
+import { compactModelInput } from "../lib/model-input.mjs";
 import handler from "vinext/server/app-router-entry";
 import { createFixedWindowRateLimiter, readJsonBodyLimited, withSecurityHeaders } from "../lib/http-security.mjs";
 import { createGuideAnswer, createJourneyGuidance, openAIStatus } from "../lib/openai.mjs";
@@ -37,7 +38,7 @@ const json = (payload: unknown, status = 200) => new Response(JSON.stringify(pay
 });
 
 function clientAddress(request: Request) {
-  const forwarded = request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for")?.split(",")[0];
+  const forwarded = request.headers.get("cf-connecting-ip");
   return String(forwarded || "anonymous").trim().slice(0, 80);
 }
 
@@ -86,32 +87,6 @@ function requestError(error: any, fallbackMessage: string, fallbackCode: string)
     415: "JSON 형식의 요청만 받을 수 있습니다."
   };
   return json({ error: messages[status] || fallbackMessage, code: error?.message || fallbackCode }, status);
-}
-
-function compactModelInput(body: Record<string, any>) {
-  const context = body?.context || {};
-  return {
-    scheduledArrival: String(body?.scheduledArrival || "").slice(0, 40),
-    context: {
-      flightDelayMinutes: context.flightDelayMinutes,
-      weatherSeverity: context.weatherSeverity,
-      immigrationSeverity: context.immigrationSeverity,
-      baggageDelayMinutes: context.baggageDelayMinutes,
-      checkedBaggage: context.checkedBaggage,
-      accessibilityNeeds: context.accessibilityNeeds,
-      largeLuggage: context.largeLuggage,
-      boardingBufferMinutes: context.boardingBufferMinutes,
-      flightMode: context.flightMode,
-      immigrationMode: context.immigrationMode,
-      weatherMode: context.weatherMode
-    },
-    candidates: Array.isArray(body?.candidates) ? body.candidates.slice(0, 12).map((candidate: any) => ({
-      id: String(candidate?.id || "").slice(0, 40),
-      departureTime: String(candidate?.departureTime || "").slice(0, 40),
-      destinationArrivalTime: candidate?.destinationArrivalTime ? String(candidate.destinationArrivalTime).slice(0, 40) : undefined,
-      accessibilityReady: typeof candidate?.accessibilityReady === "boolean" ? candidate.accessibilityReady : undefined
-    })) : []
-  };
 }
 
 function validationStatus() {
@@ -217,7 +192,9 @@ const worker = {
   async fetch(request: Request, env: Env | undefined, ctx: ExecutionContext): Promise<Response> {
     const runtimeEnv = env || ({} as Env);
     const url = new URL(request.url);
-    const apiResponse = await api(request, runtimeEnv, url);
+    let apiResponse;
+    try { apiResponse = await api(request, runtimeEnv, url); }
+    catch (error) { return withSecurityHeaders(requestError(error, "요청을 처리하지 못했습니다.", "API_ERROR")); }
     if (apiResponse) return withSecurityHeaders(apiResponse);
     if (request.method !== "GET" && request.method !== "HEAD") {
       return withSecurityHeaders(methodNotAllowed("GET, HEAD"));

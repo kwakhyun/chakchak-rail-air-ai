@@ -36,7 +36,7 @@ const syntaxFiles = (await Promise.all([
   sourceFiles("src")
 ])).flat();
 const checks = syntaxFiles.map((file) => ["--check", file]);
-checks.push(["--check", "server.mjs"], ["--test"]);
+checks.push(["--check", "server.mjs"], ["--test", ...(await readdir("tests")).filter(name => name.endsWith(".test.js")).map(name => join("tests", name))]);
 
 for (const args of checks) {
   const result = spawnSync(process.execPath, args, { stdio: "inherit" });

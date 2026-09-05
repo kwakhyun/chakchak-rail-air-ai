@@ -1,4 +1,4 @@
-import { access, rename } from "node:fs/promises";
+import { access, rename, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
 async function exists(path) {
@@ -28,3 +28,9 @@ for (const [sourceName, targetName] of shells) {
 }
 
 console.log("Sites HTML shells will be served through the Worker security boundary.");
+const entries = JSON.parse(await readFile(resolve(root, ".tmp/sites-assets.json"), "utf8"));
+const shell = resolve(root, "dist/client/app-shell.html");
+const html = (await readFile(shell, "utf8"))
+  .replace(/\/src\/app\.js(?:\?[^"']*)?/g, entries["src/app.js"])
+  .replace(/\/src\/styles\.css(?:\?[^"']*)?/g, entries["src/styles.css"]);
+await writeFile(shell, html);

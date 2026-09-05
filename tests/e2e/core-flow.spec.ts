@@ -1,5 +1,10 @@
 import { expect, test } from "@playwright/test";
 
+test.beforeEach(async ({ page }) => {
+  await page.clock.setFixedTime(new Date("2030-09-05T07:00:00Z"));
+  await page.route("**/api/data/fusion?**", route => route.fulfill({ json: { sources: [], sourceSummary: { live: 0, demo: 7 }, overallMode: "demo" } }));
+});
+
 test("여행조건부터 지연 재계산과 승차권 보호까지 이어진다", async ({ page }) => {
   const head = await page.request.head("/");
   expect(head.status()).toBe(200);
@@ -34,7 +39,7 @@ test("여행조건부터 지연 재계산과 승차권 보호까지 이어진다
   const recovery = page.getByRole("dialog", { name: "대체 일정과 승차권 처리 순서를 확인하세요" });
   await expect(recovery).toBeVisible();
   await expect(recovery.getByText(/자동으로 취소하거나 다시 예매하지 않습니다/)).toBeVisible();
-  await expect(recovery.getByRole("button", { name: "대체 일정 후보로 저장" })).toBeVisible();
+  await expect(recovery.getByRole("button", { name: "대체 일정 후보 저장" })).toBeVisible();
   await recovery.getByRole("button", { name: "지금 일정 유지" }).click();
   await expect(recovery).toBeHidden();
 });

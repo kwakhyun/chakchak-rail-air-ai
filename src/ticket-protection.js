@@ -184,9 +184,9 @@ export function buildTicketProtectionAdvice({
   ];
 
   const steps = [
-    { id: "alternative", label: "대체편 좌석·이동조건 확인", detail: "코레일과 공항철도 공식 채널에서 실제 이용 가능 여부를 먼저 확인합니다." },
+    { id: "alternative", label: "대체편 좌석과 이동 조건 확인", detail: "코레일과 공항철도 공식 채널에서 실제 이용 가능 여부를 먼저 확인합니다." },
     { id: "penalty", label: "기존 표의 반환 마감·예상 부담 확인", detail: "표 종류와 운영사를 나눠 최종 반환 금액과 변경 가능 여부를 확인합니다." },
-    { id: "secure", label: "새 표 확보가 확실할 때 기존 표 처리", detail: "좌석 확보가 확정되기 전에 기존 표부터 없애지 않도록 안내합니다." },
+    { id: "secure", label: "새 표를 확보한 뒤 기존 표 처리", detail: "새 좌석을 확보하기 전에 기존 표를 취소하지 않도록 안내합니다." },
     { id: "confirm", label: "환승·막차·도착 뒤 이동까지 최종 확인", detail: "두 운영사 표와 목적지 일정을 각각 확인한 뒤 여정 후보를 확정합니다." }
   ];
 

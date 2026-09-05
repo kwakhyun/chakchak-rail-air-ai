@@ -1,0 +1,88 @@
+import { expect, test } from "@playwright/test";
+
+const fusion = { sources: [], sourceSummary: { live: 0, demo: 7 }, overallMode: "demo" };
+
+test.beforeEach(async ({ page }) => {
+  await page.clock.setFixedTime(new Date("2030-09-05T07:00:00Z"));
+  await page.route("**/api/data/fusion?**", route => route.fulfill({ json: fusion }));
+});
+
+test("막차 이후에는 추천과 저장 대신 연결 불가 상태가 나온다", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "항공편·여행조건 바꾸기" }).click();
+  await page.locator("#journey-arrival").fill("2030-09-05T23:00");
+  await page.getByRole("button", { name: "이 여정으로 계산하기" }).click();
+  await expect(page.getByRole("heading", { name: "연결 가능한 열차를 찾지 못했어요" })).toBeVisible();
+  for (const name of ["다음 열차", "여행 일정"]) {
+    await page.locator(".topnav").getByRole("button", { name, exact: true }).click();
+    await expect(page.getByText("더 여유 있는 열차를 찾았어요", { exact: true })).toHaveCount(0);
+    await expect(page.locator("#apply-recovery")).toHaveCount(0);
+  }
+});
+
+test("응답 중에 작성한 입력과 체크박스, 열린 창을 보존한다", async ({ page }) => {
+  let release!: () => void;
+  const pending = new Promise<void>(resolve => { release = resolve; });
+  await page.route("**/api/data/fusion?**", async route => { await pending; await route.fulfill({ json: fusion }); });
+  await page.goto("/");
+  await page.getByRole("button", { name: "항공편·여행조건 바꾸기" }).click();
+  await page.locator("#journey-flight").fill("EDIT123");
+  await page.locator("#journey-large-luggage").check();
+  const response = page.waitForResponse(r => r.url().includes("/api/data/fusion"));
+  release();
+  await response;
+  await expect(page.getByRole("dialog", { name: "항공편과 여행조건을 알려주세요" })).toBeVisible();
+  await expect(page.locator("#journey-flight")).toHaveValue("EDIT123");
+  await expect(page.locator("#journey-large-luggage")).toBeChecked();
+});
+
+test("이전 안내 응답이 바뀐 여정에 다시 나타나지 않는다", async ({ page }) => {
+  let release!: () => void;
+  const pending = new Promise<void>(resolve => { release = resolve; });
+  await page.route("**/api/ai/concierge", async route => {
+    await pending;
+    await route.fulfill({ json: { mode: "fallback", guidance: { headline: "OLD_JOURNEY_RESPONSE" } } }).catch(() => {});
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: "쉬운 안내 받기" }).click();
+  await page.getByRole("button", { name: "35분 늦어졌을 때 보기" }).click();
+  release();
+  await expect(page.locator("body")).not.toContainText("OLD_JOURNEY_RESPONSE");
+  await expect(page.locator("#request-ai")).toBeEnabled();
+});
+
+test("늦은 이전 데이터가 최신 항공편의 출발지를 덮어쓰지 않는다", async ({ page }) => {
+  let release!: () => void;
+  const pending = new Promise<void>(resolve => { release = resolve; });
+  await page.route("**/api/data/fusion?**", async route => {
+    const latest = new URL(route.request().url()).searchParams.get("flight") === "NEW123";
+    if (!latest) await pending;
+    await route.fulfill({ json: { ...fusion, sources: [{ id: "incheon-flight", mode: "live", data: { origin: latest ? "새 출발지" : "이전 출발지", scheduledTime: "1705", terminal: "P03" } }] } }).catch(() => {});
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: "항공편·여행조건 바꾸기" }).click();
+  await page.locator("#journey-flight").fill("NEW123");
+  await page.getByRole("button", { name: "이 여정으로 계산하기" }).click();
+  await expect(page.locator("#view-title")).toContainText("새 출발지");
+  release();
+  await expect(page.locator("#view-title")).not.toContainText("이전 출발지");
+});
+
+test("행동 버튼과 확률은 일관되고 모바일 모든 메뉴에 가로 넘침이 없다", async ({ page }) => {
+  await page.goto("/");
+  const action = page.locator(".possibility-card [data-open-recovery]");
+  await expect(action).toBeVisible();
+  const rect = await action.boundingBox();
+  expect(rect!.y).toBeLessThan(720);
+  await page.locator(".journey-model-disclosure > summary").click();
+  const model = await page.locator(".model-score-card > strong").textContent();
+  const card = await page.locator(".confidence-gauge > strong").textContent();
+  expect(model?.replace(/\s/g, "")).toBe(card?.replace(/\s/g, ""));
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const name of ["내 이동", "다음 열차", "여행 일정", "이동 기록"]) {
+    await page.locator(".mobile-nav").getByRole("button", { name, exact: true }).click();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+  }
+  await page.getByRole("button", { name: "서비스 안내", exact: true }).click();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+});

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "CHAK² — arrival-aware Rail × Air journey recovery portfolio project",
+  "description": "CHAK\u00b2 \u2014 arrival-aware Rail \u00d7 Air journey recovery portfolio project",
   "homepage": "https://chakchak-rail-air-2026.khyun97.chatgpt.site/",
   "repository": {
     "type": "git",
@@ -24,12 +24,14 @@
     "pilot:issue": "node scripts/pilot_ops.mjs issue",
     "pilot:phase": "node scripts/pilot_ops.mjs phase",
     "pilot:export": "node scripts/pilot_ops.mjs export",
-    "test": "node --test",
+    "test": "node --test tests/*.test.js",
     "test:e2e": "playwright test",
     "typecheck": "tsc --noEmit",
     "verify": "node scripts/verify.mjs",
-    "check": "npm run typecheck && npm run verify && npm run build:sites",
-    "check:ci": "npm run check && npm run test:e2e"
+    "check": "npm run typecheck && npm run verify && npm run check:copies && npm run build:sites",
+    "check:ci": "npm run check && npm run test:e2e",
+    "sync:portfolio": "node scripts/sync-portfolio.mjs",
+    "check:copies": "node scripts/sync-portfolio.mjs --check"
   },
   "engines": {
     "node": ">=22"
@@ -47,6 +49,7 @@
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
     "@vitejs/plugin-rsc": "^0.5.26",
+    "esbuild": "0.28.1",
     "react-server-dom-webpack": "^19.2.8",
     "typescript": "5.9.3",
     "vinext": "1.0.0-beta.8",

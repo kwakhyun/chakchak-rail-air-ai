@@ -1,5 +1,7 @@
 # 착착 CHAK² — 착륙부터 착석까지
 
+이 사본은 상위 프로젝트 루트의 앱 코드를 `npm run sync:portfolio`로 반영합니다. 2026-09-05 개선 결과와 검증 내용은 `docs/improvements-2026-09-05.md`에 기록했습니다. 독립 체크아웃에서는 `npm run check`와 `npm run test:e2e`로 검증합니다.
+
 [![CI](https://github.com/kwakhyun/chakchak-rail-air-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/kwakhyun/chakchak-rail-air-ai/actions/workflows/ci.yml)
 ![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=nodedotjs&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-0b6cb8)

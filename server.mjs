@@ -1,3 +1,5 @@
+import { compactModelInput as whitelistedChakchakInput } from "./lib/model-input.mjs";
+import { Readable } from "node:stream";
 import { createServer } from "node:http";
 import { timingSafeEqual } from "node:crypto";
 import { readFile, stat } from "node:fs/promises";
@@ -5,7 +7,7 @@ import { extname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { loadLocalEnv } from "./lib/env.mjs";
-import { createFixedWindowRateLimiter, PUBLIC_SECURITY_HEADERS } from "./lib/http-security.mjs";
+import { createFixedWindowRateLimiter, PUBLIC_SECURITY_HEADERS, readJsonBodyLimited } from "./lib/http-security.mjs";
 import { createGuideAnswer, createJourneyGuidance, openAIStatus } from "./lib/openai.mjs";
 import { P2ValidationStore, loadOrCreateP2ValidationSecret } from "./lib/p2-validation-store.mjs";
 import { buildDataFusion, publicDataStatus } from "./lib/public-data.mjs";
@@ -72,33 +74,8 @@ function safePath(pathname) {
   return fullPath.startsWith(`${resolve(root)}${sep}`) ? fullPath : null;
 }
 
-async function readJsonBody(request, limitBytes = 32_768) {
-  const mediaType = String(request.headers["content-type"] || "").split(";", 1)[0].trim().toLowerCase();
-  if (mediaType !== "application/json" && !mediaType.endsWith("+json")) {
-    const error = new Error("UNSUPPORTED_MEDIA_TYPE");
-    error.statusCode = 415;
-    throw error;
-  }
-
-  let size = 0;
-  const chunks = [];
-  for await (const chunk of request) {
-    size += chunk.length;
-    if (size > limitBytes) {
-      const error = new Error("PAYLOAD_TOO_LARGE");
-      error.statusCode = 413;
-      throw error;
-    }
-    chunks.push(chunk);
-  }
-  if (!chunks.length) return {};
-  try {
-    return JSON.parse(Buffer.concat(chunks).toString("utf8"));
-  } catch {
-    const error = new Error("INVALID_JSON");
-    error.statusCode = 400;
-    throw error;
-  }
+async function readJsonBody(request) {
+  return readJsonBodyLimited({ headers: new Headers(request.headers), body: Readable.toWeb(request) });
 }
 
 function clientAddress(request) {
@@ -203,33 +180,6 @@ function whitelistedGuideInput(body) {
       recovered: model.recovered,
       fallbackRequired: model.fallbackRequired
     }
-  };
-}
-
-function whitelistedChakchakInput(body) {
-  const context = body?.context || {};
-  const candidates = Array.isArray(body?.candidates) ? body.candidates.slice(0, 12) : [];
-  return {
-    scheduledArrival: typeof body?.scheduledArrival === "string" ? body.scheduledArrival.slice(0, 40) : "",
-    context: {
-      flightDelayMinutes: context.flightDelayMinutes,
-      weatherSeverity: context.weatherSeverity,
-      immigrationSeverity: context.immigrationSeverity,
-      baggageDelayMinutes: context.baggageDelayMinutes,
-      checkedBaggage: context.checkedBaggage,
-      accessibilityNeeds: context.accessibilityNeeds,
-      largeLuggage: context.largeLuggage,
-      boardingBufferMinutes: context.boardingBufferMinutes,
-      flightMode: context.flightMode,
-      immigrationMode: context.immigrationMode,
-      weatherMode: context.weatherMode
-    },
-    candidates: candidates.map((candidate) => ({
-      id: String(candidate?.id || "").slice(0, 40),
-      departureTime: typeof candidate?.departureTime === "string" ? candidate.departureTime.slice(0, 40) : "",
-      destinationArrivalTime: typeof candidate?.destinationArrivalTime === "string" ? candidate.destinationArrivalTime.slice(0, 40) : undefined,
-      accessibilityReady: typeof candidate?.accessibilityReady === "boolean" ? candidate.accessibilityReady : undefined
-    }))
   };
 }
 
@@ -384,7 +334,7 @@ async function handleApi(request, response, url) {
       const prediction = predictChakchakJourney(whitelistedChakchakInput(body));
       sendJson(response, 200, prediction);
     } catch (error) {
-      const status = error?.statusCode || (error instanceof RangeError || error instanceof TypeError ? 400 : 500);
+      const status = error?.statusCode || (error instanceof RangeError || error instanceof TypeError || error instanceof RangeError ? 400 : 500);
       sendJson(response, status, {
         error: status === 413 ? "요청 내용이 너무 깁니다." : status === 415 ? "JSON 형식의 요청만 받을 수 있습니다." : "착착 자체 모델 입력을 확인해 주세요.",
         code: error?.message || "CHAKCHAK_MODEL_ERROR"
@@ -501,7 +451,7 @@ async function handleApi(request, response, url) {
         privacy: "성명·연락처·예약번호·항공편 번호·IP를 저장하지 않습니다. 언제든 이 여정 전체를 삭제할 수 있습니다."
       });
     } catch (error) {
-      sendJson(response, error?.statusCode || (error instanceof RangeError || error instanceof TypeError ? 400 : 500), {
+      sendJson(response, error?.statusCode || (error instanceof RangeError || error instanceof TypeError || error instanceof RangeError ? 400 : 500), {
         error: error?.publicMessage || "익명 실측 검증을 시작하지 못했습니다.",
         code: error?.code || error?.message || "VALIDATION_ENROLL_ERROR"
       });
@@ -548,8 +498,12 @@ const server = createServer(async (request, response) => {
   const url = new URL(request.url || "/", `http://${request.headers.host || "localhost"}`);
 
   if (url.pathname.startsWith("/api/")) {
-    const handled = await handleApi(request, response, url);
-    if (!handled) sendJson(response, 404, { error: "API route not found" });
+    try {
+      const handled = await handleApi(request, response, url);
+      if (!handled) sendJson(response, 404, { error: "API route not found" });
+    } catch (error) {
+      sendJson(response, error instanceof TypeError || error instanceof RangeError ? 400 : 500, { error: "요청을 처리하지 못했습니다.", code: error instanceof TypeError ? "INVALID_INPUT" : "SERVER_ERROR" });
+    }
     return;
   }
 

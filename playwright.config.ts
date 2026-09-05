@@ -9,7 +9,7 @@ export default defineConfig({
   timeout: 30_000,
   expect: { timeout: 8_000 },
   use: {
-    baseURL: "http://127.0.0.1:4173",
+    baseURL: "http://127.0.0.1:4184",
     reducedMotion: "reduce",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
@@ -23,8 +23,9 @@ export default defineConfig({
   ],
   webServer: {
     command: "npm run dev",
-    url: "http://127.0.0.1:4173/api/health",
-    reuseExistingServer: !process.env.CI,
+    env: { PORT: "4184", OPENAI_API_KEY: "", DATA_GO_KR_API_KEY: "", TOUR_API_KEY: "", CHAKCHAK_VALIDATION_STORE: "/tmp/chakchak-e2e-validation.json", CHAKCHAK_VALIDATION_SECRET: "test-only-secret", CHAKCHAK_PILOT_ADMIN_KEY: "test-only-admin" },
+    url: "http://127.0.0.1:4184/api/health",
+    reuseExistingServer: false,
     timeout: 30_000
   }
 });
