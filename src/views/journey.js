@@ -188,7 +188,7 @@ function journeyView(view) {
       <div><span class="eyebrow">${context.journeyDateLabel} 이동</span><h1 id="view-title" tabindex="-1">${escapeHtml(view.signals?.origin || demoTrip.flight.originCity)}에서 ${escapeHtml(state.journey.destination)}까지, 한눈에</h1><p>복잡한 시간표 대신 지금 무엇을 하면 되는지 알려드려요.</p><button class="button button-soft journey-edit" id="open-journey-setup" type="button">항공편·여행조건 바꾸기</button></div>
       <div class="journey-heading-visual">
         <span class="data-badge">${dataModeLabel()}</span>
-        <img src="/assets/illustrations/rail-air-journey.webp" width="780" height="188" fetchpriority="high" decoding="async" alt="공항에서 공항철도와 고속열차를 타고 목적지까지 이어지는 여정 그림" />
+        <img src="/media/illustrations/rail-air-journey.webp" width="780" height="188" fetchpriority="high" decoding="async" alt="공항에서 공항철도와 고속열차를 타고 목적지까지 이어지는 여정 그림" />
       </div>
     </section>
 

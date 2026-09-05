@@ -7,7 +7,7 @@ import { extname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { loadLocalEnv } from "./lib/env.mjs";
-import { createFixedWindowRateLimiter, PUBLIC_SECURITY_HEADERS, readJsonBodyLimited, staticCacheControl } from "./lib/http-security.mjs";
+import { createFixedWindowRateLimiter, PUBLIC_SECURITY_HEADERS, publicAssetPath, readJsonBodyLimited, staticCacheControl } from "./lib/http-security.mjs";
 import { createGuideAnswer, createJourneyGuidance, openAIStatus } from "./lib/openai.mjs";
 import { P2ValidationStore, loadOrCreateP2ValidationSecret } from "./lib/p2-validation-store.mjs";
 import { buildDataFusion, publicDataStatus } from "./lib/public-data.mjs";
@@ -514,7 +514,7 @@ const server = createServer(async (request, response) => {
   }
 
   try {
-    const filePath = safePath(url.pathname);
+    const filePath = safePath(publicAssetPath(url.pathname));
     if (!filePath) {
       sendJson(response, 400, { error: "Invalid path" });
       return;

@@ -6,11 +6,15 @@ import {
   defaultTargetDateTime,
   readJsonBodyLimited,
   staticCacheControl,
+  publicAssetPath,
   withSecurityHeaders
 } from "../lib/http-security.mjs";
 
 test("이미지는 재사용하고 HTML과 해시 없는 스크립트는 변경을 확인한다", () => {
   assert.equal(staticCacheControl("/assets/illustrations/rail-air-journey.webp"), "public, max-age=3600");
+  assert.equal(staticCacheControl("/media/illustrations/rail-air-journey.webp"), "public, max-age=3600");
+  assert.equal(publicAssetPath("/media/brand/chakchak-logo-app.png"), "/assets/brand/chakchak-logo-app.png");
+  assert.equal(publicAssetPath("/api/data/fusion"), "/api/data/fusion");
   assert.equal(staticCacheControl("/src/app-ABCDEFG2.js"), "public, max-age=31536000, immutable");
   for (const path of ["/", "/app-shell.html", "/src/app.js", "/api/data/fusion", "/missing"]) {
     assert.equal(staticCacheControl(path), "no-cache");

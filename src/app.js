@@ -143,21 +143,21 @@ const initialConfirmedJourney = loadConfirmedJourney(window.sessionStorage, init
 const initialScenarioId = initialConfirmedJourney?.scenarioId || "normal";
 const journeySceneCatalog = Object.freeze({
   전주: {
-    src: "/assets/illustrations/rail-air-journey-3d.webp",
+    src: "/media/illustrations/rail-air-journey-3d.webp",
     label: "전주 한옥 장면"
   },
   부산: {
-    src: "/assets/illustrations/rail-air-journey-3d-busan.png",
+    src: "/media/illustrations/rail-air-journey-3d-busan.png",
     label: "부산 바다 장면"
   },
   강릉: {
-    src: "/assets/illustrations/rail-air-journey-3d-gangneung.png",
+    src: "/media/illustrations/rail-air-journey-3d-gangneung.png",
     label: "강릉 바다 장면"
   }
 });
 const travelVisualAssets = Object.freeze({
-  replanGuide: "/assets/travel/travel-replan-guide-3d.webp",
-  placeFallback: "/assets/travel/travel-place-fallback-3d.webp"
+  replanGuide: "/media/travel/travel-replan-guide-3d.webp",
+  placeFallback: "/media/travel/travel-place-fallback-3d.webp"
 });
 const state = {
   scenarioId: initialScenarioId,
@@ -562,7 +562,7 @@ function aiGuideOverlay(view) {
     ? `<div class="ai-guide-conversation" id="ai-guide-answer" tabindex="-1">
         <p class="ai-guide-user-message">${escapeHtml(state.guideQuestion)}</p>
         <div class="ai-guide-answer">
-          <div class="ai-guide-answer-head"><img src="/assets/brand/chakchak-logo-app.png" alt="" aria-hidden="true" /><span>${state.guideMode === "live" ? "착착 AI가 현재 여정을 보고 답했어요" : "착착 기본 안내"}</span></div>
+          <div class="ai-guide-answer-head"><img src="/media/brand/chakchak-logo-app.png" alt="" aria-hidden="true" /><span>${state.guideMode === "live" ? "착착 AI가 현재 여정을 보고 답했어요" : "착착 기본 안내"}</span></div>
           <p>${escapeHtml(answer.answer)}</p>
           ${answer.actions?.length ? `<ol>${answer.actions.map((action) => `<li>${escapeHtml(action)}</li>`).join("")}</ol>` : ""}
           ${answer.relatedView && answer.relatedView !== "none" ? `<button class="button button-soft" type="button" data-view-target="${answer.relatedView}">${relatedLabels[answer.relatedView] || "관련 화면 보기"}</button>` : ""}
@@ -576,7 +576,7 @@ function aiGuideOverlay(view) {
   return `
     <aside class="ai-guide-overlay ${state.guideOpen ? "is-open" : ""}" aria-label="착착 AI 가이드">
       <section class="ai-guide-popover" id="ai-guide-popover" role="dialog" aria-modal="false" aria-labelledby="ai-guide-title" ${state.guideOpen ? "" : "hidden"}>
-        <header><div><span class="ai-guide-mini-mark"><img src="/assets/brand/chakchak-logo-app.png" alt="" aria-hidden="true" /></span><div><strong id="ai-guide-title">착착 AI 가이드</strong><small>현재 여정과 착착 사용법만 안내해요</small></div></div><button id="close-ai-guide" type="button" aria-label="AI 가이드 닫기">닫기</button></header>
+        <header><div><span class="ai-guide-mini-mark"><img src="/media/brand/chakchak-logo-app.png" alt="" aria-hidden="true" /></span><div><strong id="ai-guide-title">착착 AI 가이드</strong><small>현재 여정과 착착 사용법만 안내해요</small></div></div><button id="close-ai-guide" type="button" aria-label="AI 가이드 닫기">닫기</button></header>
         <div class="ai-guide-scroll">
           ${answerBlock}
           ${state.guideError ? `<p class="ai-guide-error" role="alert">${escapeHtml(state.guideError)}</p>` : ""}
@@ -592,7 +592,7 @@ function aiGuideOverlay(view) {
       </section>
       <button class="ai-guide-fab" id="toggle-ai-guide" type="button" aria-label="${state.guideOpen ? "AI 가이드 닫기" : "착착 AI 가이드 열기"}" aria-expanded="${state.guideOpen}" aria-controls="ai-guide-popover">
         <span class="ai-guide-fab-glow" aria-hidden="true"></span>
-        <img src="/assets/brand/chakchak-logo-app.png" alt="" aria-hidden="true" />
+        <img src="/media/brand/chakchak-logo-app.png" alt="" aria-hidden="true" />
         <span>${state.guideOpen ? "가이드 닫기" : "AI에게 물어보기"}</span>
       </button>
     </aside>`;
@@ -608,7 +608,7 @@ function render(options = {}) {
     <div class="topbar-wrap">
       <header class="topbar app-shell">
         <button class="brand" type="button" data-view-target="journey" aria-label="착착 내 이동으로 이동">
-          <span class="brand-mark" aria-hidden="true"><img src="/assets/brand/chakchak-logo-app.png" alt="" /></span>
+          <span class="brand-mark" aria-hidden="true"><img src="/media/brand/chakchak-logo-app.png" alt="" /></span>
           <span class="brand-copy"><strong>착착 CHAK²</strong><span>항공부터 철도까지 이어주는 여행 도우미</span></span>
         </button>
         <nav class="topnav" aria-label="주요 메뉴">${navButtons()}</nav>
@@ -625,7 +625,7 @@ function render(options = {}) {
 
     <nav class="mobile-nav" aria-label="모바일 주요 메뉴">${navButtons("mobile-nav-item")}</nav>
 
-    <footer class="site-footer"><div class="app-shell footer-grid"><div class="footer-brand"><img src="/assets/brand/chakchak-logo-app.png" alt="" aria-hidden="true" /><div><strong>착착 CHAK²</strong><p>착륙부터 열차 착석까지, 안심할 수 있는 이동을 돕습니다.</p></div></div><span>착착 자체 AI × 공공·개방 데이터</span></div></footer>
+    <footer class="site-footer"><div class="app-shell footer-grid"><div class="footer-brand"><img src="/media/brand/chakchak-logo-app.png" alt="" aria-hidden="true" /><div><strong>착착 CHAK²</strong><p>착륙부터 열차 착석까지, 안심할 수 있는 이동을 돕습니다.</p></div></div><span>착착 자체 AI × 공공·개방 데이터</span></div></footer>
 
     <dialog id="journey-setup-dialog" aria-labelledby="journey-setup-title" aria-describedby="journey-setup-description">
       <form class="dialog-body journey-setup-form" id="journey-setup-form">

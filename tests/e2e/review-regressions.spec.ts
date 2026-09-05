@@ -262,7 +262,7 @@ test("첫 화면 아이콘은 별도 요청 없이 표시되고 이미지는 재
   }));
   expect(first.missing).toBe(0);
   expect(first.requests.filter(url => url.includes("/assets/icons/"))).toEqual([]);
-  expect(first.preload).toBe("/assets/illustrations/rail-air-journey.webp");
+  expect(first.preload).toBe("/media/illustrations/rail-air-journey.webp");
   await page.reload();
   await expect(page.locator(".signal-board")).toBeVisible();
   await page.evaluate(() => Promise.all([...document.images].map(img => img.decode())));
@@ -271,5 +271,8 @@ test("첫 화면 아이콘은 별도 요청 없이 표시되고 이미지는 재
     .map(r => ({ name: r.name, bytes: (r as PerformanceResourceTiming).transferSize })));
   expect(images.length).toBeGreaterThanOrEqual(2);
   expect(images.every(img => img.bytes === 0)).toBe(true);
+  const missing = await page.request.get("/media/missing-review-image.png");
+  expect(missing.status()).toBe(404);
+  expect(missing.headers()["cache-control"]).toBe("no-store");
   await page.close();
 });
