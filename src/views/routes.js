@@ -117,7 +117,7 @@ function ticketProtectionDialog(view) {
         ${advice.steps.slice(0, 3).map((step, index) => `<li><span>${index + 1}</span><strong>${escapeHtml(step.label)}</strong></li>`).join("")}
       </ol>
       <div class="recovery-operator-links">
-        ${advice.operators.map((operator) => `<a href="${operator.officialUrl}" target="_blank" rel="noreferrer"><span>${escapeHtml(operator.label)}</span><strong>${escapeHtml(operator.feeBand)}</strong></a>`).join("")}
+        ${advice.operators.map((operator) => `<a href="${operator.officialUrl}" target="_blank" rel="noreferrer"><span>${escapeHtml(operator.label)}: ${escapeHtml(operator.service)}</span><strong>${escapeHtml(operator.feeBand)}</strong></a>`).join("")}
       </div>
       <p>${escapeHtml(advice.disclaimer)}</p>
     </section>`;

@@ -1,10 +1,11 @@
 import { expect, test } from "@playwright/test";
+import { liveFusionFor } from "./fixtures";
 
 const fusion = { sources: [], sourceSummary: { live: 0, demo: 7 }, overallMode: "demo" };
 
 test.beforeEach(async ({ page }) => {
   await page.clock.setFixedTime(new Date("2030-09-05T07:00:00Z"));
-  await page.route("**/api/data/fusion?**", route => route.fulfill({ json: fusion }));
+  await page.route("**/api/data/fusion?**", route => route.fulfill({ json: liveFusionFor(new URL(route.request().url()).searchParams.get("at") || undefined) }));
 });
 
 test("막차 이후에는 추천과 저장 대신 연결 불가 상태가 나온다", async ({ page }) => {
@@ -58,7 +59,7 @@ test("늦은 이전 데이터가 최신 항공편의 출발지를 덮어쓰지 �
   await page.route("**/api/data/fusion?**", async route => {
     const latest = new URL(route.request().url()).searchParams.get("flight") === "NEW123";
     if (!latest) await pending;
-    await route.fulfill({ json: { ...fusion, sources: [{ id: "incheon-flight", mode: "live", data: { origin: latest ? "새 출발지" : "이전 출발지", scheduledTime: "1705", terminal: "P03" } }] } }).catch(() => {});
+    await route.fulfill({ json: { ...fusion, sources: [...liveFusionFor().sources.filter(s => s.id !== "incheon-flight"), { id: "incheon-flight", mode: "live", data: { origin: latest ? "새 출발지" : "이전 출발지", scheduledTime: "1705", terminal: "P03" } }] } }).catch(() => {});
   });
   await page.goto("/?mode=live");
   await page.getByRole("button", { name: "항공편·여행조건 바꾸기" }).click();
@@ -120,7 +121,7 @@ test("예시 여정은 외부 응답 없이 유지되고 실제 조회로 전환
   let requests = 0;
   await page.route("**/api/data/fusion?**", route => {
     requests++;
-    return route.fulfill({ json: { ...fusion, sources: [{ id: "incheon-flight", mode: "live", data: { origin: "실제 출발지", scheduledTime: "1630", estimatedTime: "1650", terminal: "P01" } }] } });
+    return route.fulfill({ json: { ...fusion, sources: [...liveFusionFor().sources.filter(s => s.id !== "incheon-flight"), { id: "incheon-flight", mode: "live", data: { origin: "실제 출발지", scheduledTime: "1630", estimatedTime: "1650", terminal: "P03" } }] } });
   });
   await page.goto("/");
   await expect(page.locator(".trip-card .flight-chip")).toContainText("KE704");
@@ -198,6 +199,7 @@ test("데스크톱은 원래 패널 배치를 유지하고 모바일 상세 정�
 });
 
 test("예시 조건과 실제 조회 실패를 구분해 표시한다", async ({ page }) => {
+  await page.route("**/api/data/fusion?**", route => route.fulfill({ json: fusion }));
   await page.goto("/");
   const board = page.locator(".signal-board");
   await expect(board).toContainText("예시 여정에 적용한 공항과 철도 조건");
@@ -207,7 +209,6 @@ test("예시 조건과 실제 조회 실패를 구분해 표시한다", async ({
   await page.getByRole("button", { name: "항공편·여행조건 바꾸기" }).click();
   await page.locator("#journey-live-flight").check();
   await page.getByRole("button", { name: "이 여정으로 계산하기" }).click();
-  await page.locator(".journey-signal-disclosure").evaluate(el => { (el as HTMLDetailsElement).open = true; });
   await expect(board).toContainText("조회 불가");
   await expect(board).toContainText("0/4");
 });

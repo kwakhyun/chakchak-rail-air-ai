@@ -84,7 +84,7 @@ test("Responses API request pins Luna, privacy, and strict structured output", a
         json: async () => ({
           id: "resp_test",
           model: "gpt-5.6-luna",
-          output: [{ type: "message", content: [{ type: "output_text", text: JSON.stringify(guidance) }] }]
+          output: [{ type: "message", content: [{ type: "output_text", text: JSON.stringify({ explanationId: "official_check" }) }] }]
         })
       };
     }
@@ -158,7 +158,7 @@ test("AI guide uses strict structured output without changing model facts", asyn
         ok: true,
         json: async () => ({
           model: "gpt-5.6-luna",
-          output: [{ type: "message", content: [{ type: "output_text", text: JSON.stringify(answer) }] }]
+          output: [{ type: "message", content: [{ type: "output_text", text: JSON.stringify({ explanationId: "basis" }) }] }]
         })
       };
     }
@@ -170,4 +170,37 @@ test("AI guide uses strict structured output without changing model facts", asyn
   assert.match(requestBody.safety_identifier, /^chakchak_guide_[a-f0-9]{32}$/);
   assert.match(requestBody.input, /KTX 419/);
   assert.equal(JSON.stringify(requestBody).includes("test-only-key"), false);
+});
+
+test("AI가 만든 다른 열차, 시각, 확률과 보장 문구는 가이드와 다국어 안내에 표시하지 않는다", async () => {
+  const forged = { answer: "KTX 999는 18:00 출발, 100% 탑승 보장", actions: ["기존 표를 취소하세요"], relatedView: "routes", disclaimer: "좌석 보장" };
+  const fetchImpl = async () => ({ ok: true, json: async () => ({ output_text: JSON.stringify(forged) }) });
+  const guide = await createGuideAnswer(GUIDE_INPUT, { env: { OPENAI_API_KEY: "test-only" }, fetchImpl });
+  assert.equal(guide.mode, "fallback");
+  assert.match(guide.answer.answer, /KTX 419/);
+  assert.match(guide.answer.answer, /95%/);
+  assert.doesNotMatch(JSON.stringify(guide.answer), /999|100%|18:00|좌석 보장/);
+  for (const locale of ["ko", "en", "ja", "zh"]) {
+    const result = await createJourneyGuidance({ ...INPUT, locale }, { env: { OPENAI_API_KEY: "test-only" }, fetchImpl });
+    assert.equal(result.mode, "fallback");
+    assert.match(result.guidance.summary, /KTX 423/);
+    assert.match(result.guidance.summary, /99%/);
+    assert.doesNotMatch(JSON.stringify(result.guidance), /999|100%|18:00/);
+  }
+});
+
+test("검증된 설명 ID만 허용하고 숫자와 행동 순서는 코드에서 고정한다", async () => {
+  for (const selection of [{ explanationId: "official_check" }, { explanationId: "unknown" }, { explanationId: "basis", answer: "기존 표 취소" }, { explanationId: "__proto__" }, { explanationId: ["basis"] }]) {
+    const result = await createGuideAnswer({ ...GUIDE_INPUT, question: "예매한 승차권은 어떻게 처리해?" }, {
+      env: { OPENAI_API_KEY: "test-only" },
+      fetchImpl: async (_, options) => {
+        const body = JSON.parse(options.body);
+        assert.deepEqual(Object.keys(body.text.format.schema.properties), ["explanationId"]);
+        return { ok: true, json: async () => ({ output_text: JSON.stringify(selection) }) };
+      }
+    });
+    assert.equal(result.mode, selection.explanationId === "official_check" ? "live" : "fallback");
+    assert.deepEqual(result.answer.actions, GUIDE_INPUT.ticketProtection.steps);
+    assert.equal(result.answer.disclaimer, GUIDE_INPUT.ticketProtection.disclaimer);
+  }
 });

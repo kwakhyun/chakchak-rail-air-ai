@@ -5,12 +5,12 @@ import { selectedCandidate } from "./journey-decision.js";
 import { rebaseRailPlan } from "./live-journey.js";
 import { buildRailPlan } from "./rail-plan.js";
 import { buildTravelActivities } from "./travel-itinerary.js";
-import { buildTicketProtectionAdvice } from "./ticket-protection.js";
+import { buildTicketProtectionAdvice, normalizeBookedLeg } from "./ticket-protection.js";
 const localTimeFormatter = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Seoul", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
 
 export function createJourneyModel(state) {
 function currentRailPlan(scheduledArrival) {
-  const plan = buildRailPlan(demoTrip, scheduledArrival, state.fusion, state.signals?.terminal);
+  const plan = buildRailPlan(demoTrip, scheduledArrival, state.fusion, state.signals?.terminal, new Date(), { allowDemo: state.journey.useExampleFlight !== false });
   // Keep a diagnostic model input for the about/validation panels; never present it as a recommendation.
   return plan.unavailable ? { ...rebaseRailPlan(demoTrip, scheduledArrival), ...plan, airportRail: rebaseRailPlan(demoTrip, scheduledArrival).airportRail, trains: rebaseRailPlan(demoTrip, scheduledArrival).trains } : plan;
 }
@@ -150,8 +150,8 @@ function getViewModel() {
   const protectionKtx = railPlan.trains.find((train) => train.recommendedArexId === protectionCandidate.id);
   const ticketProtection = buildTicketProtectionAdvice({
     ticket: state.journey.ticket,
-    existingArex: railPlan.airportRail[0],
-    existingKtx: railPlan.trains[0],
+    existingArex: normalizeBookedLeg(state.journey.ticket?.bookings?.arex),
+    existingKtx: normalizeBookedLeg(state.journey.ticket?.bookings?.korail),
     alternativeArex: protectionArex,
     alternativeKtx: protectionKtx,
     allKtx: railPlan.trains,

@@ -1,8 +1,9 @@
+import { assertJourneyWorkload, MAX_OPTIMIZATION_NODES, MAX_OPTIMIZATION_MS } from "./computation-limits.js";
 const MINUTE_MS = 60_000;
 
 export const CHAKCHAK_CONSTRAINT_POLICY = Object.freeze({
   id: "chakchak-exact-journey-optimizer-v1",
-  method: "exhaustive constrained lexicographic search",
+  method: "bounded exact search with infeasible-prefix pruning",
   hardConstraints: Object.freeze([
     "BOARDING_SAFETY",
     "ACCESSIBILITY",
@@ -21,14 +22,12 @@ export const CHAKCHAK_CONSTRAINT_POLICY = Object.freeze({
   ])
 });
 
-export function optimizeConstrainedJourney({ candidates, preferences = {}, activities = [] }) {
+export function optimizeConstrainedJourney({ candidates, preferences = {}, activities = [], now = () => performance.now() }) {
   if (!Array.isArray(candidates) || candidates.length === 0) {
     throw new TypeError("제약 최적화 후보 여정이 필요합니다.");
   }
-  if (candidates.length > 12) throw new RangeError("제약 최적화 후보는 최대 12개입니다.");
-  if (!Array.isArray(activities) || activities.length > 8) {
-    throw new RangeError("관광 일정은 최대 8개까지 최적화할 수 있습니다.");
-  }
+  assertJourneyWorkload(candidates, activities);
+  const budget = { nodes: 0, now, deadline: now() + MAX_OPTIMIZATION_MS };
 
   const normalizedPreferences = {
     maxPrice: finiteOrInfinity(preferences.maxPrice),
@@ -37,12 +36,13 @@ export function optimizeConstrainedJourney({ candidates, preferences = {}, activ
     requireReservationAvailability: Boolean(preferences.requireReservationAvailability)
   };
   const normalizedActivities = activities.map(normalizeActivity);
-  const evaluated = candidates.map((candidate) => evaluateCandidate(candidate, normalizedPreferences, normalizedActivities));
+  const evaluated = candidates.map((candidate) => evaluateCandidate(candidate, normalizedPreferences, normalizedActivities, budget));
   const feasible = evaluated.filter((candidate) => candidate.feasible).sort(compareCandidatePlans);
   const selected = feasible[0] || evaluated.sort(compareFallbackCandidates)[0];
 
   return {
     schemaVersion: "1.0",
+    search: { visitedNodes: budget.nodes, complete: true, maxNodes: MAX_OPTIMIZATION_NODES },
     policy: CHAKCHAK_CONSTRAINT_POLICY,
     feasible: feasible.length > 0,
     selectedCandidateId: selected.id,
@@ -53,7 +53,7 @@ export function optimizeConstrainedJourney({ candidates, preferences = {}, activ
   };
 }
 
-function evaluateCandidate(candidate, preferences, activities) {
+function evaluateCandidate(candidate, preferences, activities, budget) {
   const profile = candidate.decisionProfile || {};
   const price = finiteOr(candidate.price, 0);
   const transferCount = finiteOr(candidate.transferCount, 1);
@@ -67,7 +67,7 @@ function evaluateCandidate(candidate, preferences, activities) {
     rejectionReasons.push("RESERVATION_AVAILABILITY");
   }
 
-  const itinerary = optimizeActivities(candidate.destinationArrivalTime, activities, preferences.arrivalToFirstMinutes);
+  const itinerary = optimizeActivities(candidate.destinationArrivalTime, activities, preferences.arrivalToFirstMinutes, budget);
   if (!itinerary.feasible) rejectionReasons.push("TOURISM_OPENING_HOURS");
   const feasible = rejectionReasons.length === 0;
   const arrivalMs = parseDate(candidate.destinationArrivalTime, "candidate.destinationArrivalTime");
@@ -94,26 +94,30 @@ function evaluateCandidate(candidate, preferences, activities) {
   };
 }
 
-function optimizeActivities(destinationArrivalTime, activities, arrivalToFirstMinutes) {
+function optimizeActivities(destinationArrivalTime, activities, arrivalToFirstMinutes, budget) {
   if (!activities.length) {
     return { feasible: true, items: [], requiredPlansKept: 0, reservationsKept: 0, preservedStayMinutes: 0, plannedStayMinutes: 0, preservationRate: 1 };
   }
   const arrivalMs = parseDate(destinationArrivalTime, "destinationArrivalTime") + arrivalToFirstMinutes * MINUTE_MS;
   const required = activities.filter((activity) => activity.required);
-  const optional = activities.filter((activity) => !activity.required);
-  const plans = [];
-  for (let mask = 0; mask < 2 ** optional.length; mask += 1) {
-    const selected = [...required, ...optional.filter((_, index) => mask & (1 << index))];
-    for (const order of permutations(selected)) {
-      const plan = scheduleActivities(arrivalMs, order);
-      if (plan.feasible) plans.push(plan);
+  let best = null;
+  function visit(order, remaining) {
+    budget.nodes += 1;
+    if (budget.nodes > MAX_OPTIMIZATION_NODES || budget.now() > budget.deadline) {
+      const error = new RangeError("OPTIMIZATION_BUDGET_EXCEEDED");
+      error.status = error.statusCode = 503;
+      throw error; // Never return a partial search as an optimal recommendation.
     }
+    const plan = scheduleActivities(arrivalMs, order);
+    if (!plan.feasible) return;
+    if (required.every(activity => order.includes(activity)) && (!best || compareItineraries(plan, best) < 0)) best = plan;
+    for (const activity of remaining) visit([...order, activity], remaining.filter(other => other !== activity));
   }
-  if (!plans.length) {
+  visit([], activities);
+  if (!best) {
     return { feasible: false, items: [], requiredPlansKept: 0, reservationsKept: 0, preservedStayMinutes: 0, plannedStayMinutes: sum(activities.map((item) => item.durationMinutes)), preservationRate: 0 };
   }
-  plans.sort(compareItineraries);
-  return plans[0];
+  return best;
 }
 
 function scheduleActivities(arrivalMs, activities) {
@@ -238,18 +242,6 @@ function buildExplanation(selected, preferences, activities) {
     reasons,
     officialConfirmationRequired: selected.reservationStatus === "OFFICIAL_CONFIRMATION_REQUIRED"
   };
-}
-
-function* permutations(items) {
-  if (items.length <= 1) {
-    yield items;
-    return;
-  }
-  for (let index = 0; index < items.length; index += 1) {
-    const current = items[index];
-    const rest = [...items.slice(0, index), ...items.slice(index + 1)];
-    for (const tail of permutations(rest)) yield [current, ...tail];
-  }
 }
 
 function parseDate(value, label) {

@@ -1,6 +1,7 @@
 import { rebaseRailPlan } from "./live-journey.js";
 
 const minute = 60_000;
+export const MAX_STALE_RAIL_MS = 15 * minute;
 const dateFormatter = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" });
 
 export function railInstant(value) {
@@ -36,15 +37,19 @@ function airportLegs(rows, terminal, date) {
   });
 }
 
-export function buildRailPlan(trip, scheduledArrival, fusion, terminal = "T2", now = new Date()) {
+export function buildRailPlan(trip, scheduledArrival, fusion, terminal = "T2", now = new Date(), { allowDemo = true } = {}) {
   const date = dateFormatter.format(new Date(scheduledArrival));
   const template = rebaseRailPlan(trip, scheduledArrival);
   const airportSource = fusion?.sources?.find(s => s.id === "airport-rail");
   const ktxSource = fusion?.sources?.find(s => s.id === "tago-train");
   const observedAirport = airportSource?.mode === "live" ? airportLegs(airportSource.data || [], terminal, date) : [];
-  const airport = observedAirport.length ? observedAirport : template.airportRail.map(t => ({ ...t, source: "demo" }));
+  const airport = observedAirport.length ? observedAirport : allowDemo ? template.airportRail.map(t => ({ ...t, source: "demo" })) : [];
+  const age = now.getTime() - Date.parse(ktxSource?.lastLiveAt);
+  const lastKnownGood = ktxSource?.mode === "fallback"
+    && ["tago", "korail-direct", "last-known-good"].includes(ktxSource.provider)
+    && !ktxSource.snapshot && age >= 0 && age <= MAX_STALE_RAIL_MS;
   // An explicit empty official response means no service, not permission to invent one.
-  const officialKtx = ktxSource && ["live", "unavailable"].includes(ktxSource.mode);
+  const officialKtx = ktxSource && (ktxSource.mode === "live" || lastKnownGood);
   const trains = officialKtx ? (ktxSource.data || []).flatMap(row => {
     const departure = railInstant(row.departureTime);
     const arrival = railInstant(row.arrivalTime);
@@ -52,9 +57,9 @@ export function buildRailPlan(trip, scheduledArrival, fusion, terminal = "T2", n
     if (row.departureStation && station(row.departureStation) !== "서울") return [];
     if (row.arrivalStation && station(row.arrivalStation) !== "전주") return [];
     return [{ id: `KTX-${row.trainNo}-${Date.parse(departure)}`, service: `KTX ${row.trainNo}`, origin: "서울역", destination: "전주역", departure, arrival,
-      price: Number(row.adultFare) || 0, fareKnown: Number(row.adultFare) > 0, source: "official", transferMinutes: 18,
+      price: Number(row.adultFare) || 0, fareKnown: Number(row.adultFare) > 0, source: lastKnownGood ? "last-known-good" : "official", transferMinutes: 18,
       accessibilityReady: row.accessibilityReady }];
-  }) : template.trains.map(t => ({ ...t, source: "demo", fareKnown: true }));
+  }) : allowDemo && !ktxSource ? template.trains.map(t => ({ ...t, source: "demo", fareKnown: true })) : [];
   const cutoff = Math.max(Date.parse(scheduledArrival), now.getTime());
   const pairs = airport.flatMap(arex => trains.filter(ktx =>
     Date.parse(arex.departure) > cutoff && Date.parse(ktx.departure) >= Date.parse(arex.arrival) + ktx.transferMinutes * minute
@@ -62,14 +67,15 @@ export function buildRailPlan(trip, scheduledArrival, fusion, terminal = "T2", n
   // Keep the latest valid airport connection per KTX to avoid filling all slots with one train.
   const seen = new Set();
   const selected = pairs.filter(pair => { if (seen.has(pair.ktx.id)) return false; seen.add(pair.ktx.id); return true; }).slice(0, 12);
-  const allOfficial = observedAirport.length > 0 && officialKtx;
+  const allOfficial = observedAirport.length > 0 && officialKtx && !lastKnownGood;
+  const unverified = (!officialKtx || !observedAirport.length) && !allowDemo;
   return {
     timetable: trains.filter(train => Date.parse(train.departure) > now.getTime()).sort((a, b) => Date.parse(a.departure) - Date.parse(b.departure)),
     airportRail: selected.map(({ arex, ktx }) => ({ ...arex, id: connectionId(arex, ktx) })),
     trains: selected.map(({ arex, ktx }) => ({ ...ktx, recommendedArexId: connectionId(arex, ktx) })),
-    sourceLabel: allOfficial ? "공식 운행시간표" : officialKtx ? "KTX 공식 시간표 · 공항철도 체험 시간표" : "체험 시간표 · 실제 운행 확인 필요",
+    sourceLabel: lastKnownGood ? "KTX 마지막 정상 시간표 · 운행 재확인 필요" : allOfficial ? "공식 운행시간표" : officialKtx ? (observedAirport.length ? "KTX 공식 시간표" : allowDemo ? "KTX 공식 시간표 · 공항철도 체험 시간표" : "KTX 공식 시간표 · 공항철도 연결 확인 필요") : allowDemo && !ktxSource ? "체험 시간표 · 실제 운행 확인 필요" : "실제 운행시간표 조회 불가",
     authoritative: allOfficial,
     unavailable: selected.length === 0,
-    reason: selected.length ? null : "도착 이후 환승 가능한 열차가 없습니다."
+    reason: selected.length ? null : unverified ? "운행정보를 확인하지 못해 연결 가능 여부를 판단할 수 없습니다. 잠시 후 다시 조회하거나 운영사 공식 채널에서 확인해 주세요." : "도착 이후 환승 가능한 열차가 없습니다."
   };
 }

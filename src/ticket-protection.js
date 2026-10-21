@@ -10,6 +10,20 @@ export const AREX_TERMS_URL = "https://www.arex.or.kr/content.do?menuNo=MN201503
 
 const ticketTypeLabel = (ticketType) => TICKET_TYPES.find((item) => item.id === ticketType)?.label || "일반 승차권";
 
+// A booked leg is supplied by the traveller, never inferred from recommendations.
+export function normalizeBookedLeg(value) {
+  if (!value || typeof value.service !== "string" || !value.service.trim()) return null;
+  if (!/^\d{4}-\d{2}-\d{2}T.*(?:Z|[+-]\d{2}:\d{2})$/.test(value.departure || "") || !Number.isFinite(Date.parse(value.departure))) return null;
+  const departure = new Date(value.departure).toISOString();
+  const arrival = Date.parse(value.arrival) > Date.parse(departure) ? new Date(value.arrival).toISOString() : undefined;
+  return { service: value.service.trim().slice(0, 40), departure, arrival };
+}
+
+function unknownBooking(id, label, officialUrl, officialLabel) {
+  return { id, label, service: "예매편 확인 필요", ticketType: "예매 정보 미확인", deadline: "예매한 열차의 출발일시 확인 필요",
+    feeBand: "예매 정보 확인 후 안내", detail: "승차권에 적힌 열차명과 출발일시를 입력하면 해당 표의 확인 순서를 안내합니다. 최종 반환 금액은 운영사에서 확인하세요.", officialUrl, officialLabel };
+}
+
 const koreaCalendarDate = new Intl.DateTimeFormat("en-CA", {
   timeZone: "Asia/Seoul",
   year: "numeric",
@@ -120,6 +134,10 @@ export function buildTicketProtectionAdvice({
   }
 
   const operators = [];
+  existingKtx = normalizeBookedLeg(existingKtx);
+  existingArex = normalizeBookedLeg(existingArex);
+  if (normalized.korail && !existingKtx) operators.push(unknownBooking("korail", "KTX·코레일 승차권", KORAIL_REFUND_GUIDE_URL, "코레일 반환 기준 확인"));
+  if (normalized.arex && !existingArex) operators.push(unknownBooking("arex", "공항철도 승차권", AREX_TERMS_URL, "공항철도 반환 기준 확인"));
   if (normalized.korail && existingKtx) {
     const minutesToDeparture = minutesUntil(existingKtx.departure, now);
     const fee = korailFeeAdvice(normalized.ticketType, minutesToDeparture, existingKtx.arrival, now);

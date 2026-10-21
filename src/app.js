@@ -7,6 +7,9 @@ import { createJourneyModel } from "./journey-model.js";
 import { plannedTravelItems } from "./travel-itinerary.js";
 import { captureUiState, restoreUiState } from "./ui-state.js";
 import { createLatestRequest } from "./api-client.js";
+import { normalizeBookedLeg } from "./ticket-protection.js";
+import { loadJourneySession, saveJourneySession } from "./journey-session.js";
+import { refreshValidationSession } from "./validation-client.js";
 const fusionRequests = createLatestRequest();
 const guidanceRequests = createLatestRequest();
 import { demoTrip, disruptionPresets, sourceCatalog } from "./data.js";
@@ -121,7 +124,7 @@ const primaryNavigation = Object.freeze(navigation.filter((item) => item.id !== 
 
 const hashView = window.location.hash.replace("#", "");
 const initialArrival = nextDayArrival("17:05");
-const initialJourney = {
+const defaultJourney = {
   flightId: demoTrip.flight.flightId,
   useExampleFlight: new URLSearchParams(window.location.search).get("mode") !== "live",
   arrivalAt: initialArrival,
@@ -139,8 +142,11 @@ const initialJourney = {
   },
   interests: [...demoTrip.traveller.interests]
 };
+const savedJourneySession = loadJourneySession(window.sessionStorage);
+const initialJourney = savedJourneySession?.journey || defaultJourney;
+if (new URLSearchParams(window.location.search).get("mode") === "live") initialJourney.useExampleFlight = false;
 const initialConfirmedJourney = loadConfirmedJourney(window.sessionStorage, initialJourney);
-const initialScenarioId = initialConfirmedJourney?.scenarioId || "normal";
+const initialScenarioId = savedJourneySession?.scenarioId || initialConfirmedJourney?.scenarioId || "normal";
 const journeySceneCatalog = Object.freeze({
   전주: {
     src: "/media/illustrations/rail-air-journey-3d.webp",
@@ -161,8 +167,8 @@ const travelVisualAssets = Object.freeze({
 });
 const state = {
   scenarioId: initialScenarioId,
-  previewDelayMinutes: disruptionPresets[initialScenarioId]?.flightDelayMinutes || 0,
-  customDelayActive: false,
+  previewDelayMinutes: savedJourneySession?.previewDelayMinutes ?? disruptionPresets[initialScenarioId]?.flightDelayMinutes ?? 0,
+  customDelayActive: savedJourneySession?.customDelayActive || false,
   travelDay: "all",
   confirmedJourney: initialConfirmedJourney,
   dataMode: "offline-demo",
@@ -514,9 +520,10 @@ function unavailableJourneyView(view) {
     <section class="view-heading" aria-labelledby="view-title"><div><span class="eyebrow">${viewContext.journeyDateLabel} 출발</span><h1 id="view-title" tabindex="-1">서울에서 ${escapeHtml(state.journey.destination)}까지 열차 시간표</h1><p>서울역 출발 기준입니다. 공항에서 서울역까지의 이동은 별도로 확인해 주세요.</p></div></section>
     <section class="panel unavailable-journey"><h2>원하는 열차에 맞춰 이동을 준비하세요</h2><p>입력한 항공편과 바로 연결되는 추천편은 없어, 선택한 날짜의 열차 시간표를 먼저 보여드려요.</p><div class="hero-actions"><button class="button button-primary" id="open-journey-setup" type="button">항공편·여행조건 바꾸기</button><a class="button button-soft" href="https://www.letskorail.com/" target="_blank" rel="noreferrer">코레일에서 좌석 확인</a></div></section>
     <section class="timetable-list" aria-label="선택한 날짜의 열차 시간표">${trains.map(train => `
-      <article class="panel timetable-card"><div><span class="tag">${train.source === "official" ? "공식 시간표" : "체험 시간표 · 실제 운행 확인 필요"}</span><h2>${escapeHtml(train.service)}</h2></div><div class="option-line"><span>서울역 ${formatTime(train.departure)}</span><i aria-hidden="true"></i><span>${escapeHtml(state.journey.destination)}역 ${formatTime(train.arrival)}</span></div><p>${train.fareKnown === false ? "운임은 코레일에서 확인해 주세요." : `${train.price.toLocaleString("ko-KR")}원부터 · 좌석 확인 필요`}</p></article>`).join("")}</section>`;
+      <article class="panel timetable-card"><div><span class="tag">${train.source === "official" ? "공식 시간표" : train.source === "last-known-good" ? "마지막 정상 시간표 · 재확인 필요" : "체험 시간표 · 실제 운행 확인 필요"}</span><h2>${escapeHtml(train.service)}</h2></div><div class="option-line"><span>서울역 ${formatTime(train.departure)}</span><i aria-hidden="true"></i><span>${escapeHtml(state.journey.destination)}역 ${formatTime(train.arrival)}</span></div><p>${train.fareKnown === false ? "운임은 코레일에서 확인해 주세요." : `${train.price.toLocaleString("ko-KR")}원부터 · 좌석 확인 필요`}</p></article>`).join("")}</section>`;
   return `<section class="view-heading"><span class="eyebrow">연결 여정 확인</span><h1 id="view-title" tabindex="-1">연결 가능한 열차를 찾지 못했어요</h1><p>${escapeHtml(view.railPlan.sourceLabel)}</p></section>
-    <section class="panel unavailable-journey" role="status"><h2>당일 이동 계획을 다시 확인해 주세요</h2><p>도착 이후 탑승과 환승 조건을 만족하는 열차가 없습니다. 다음 날 이동이나 다른 교통편을 공식 채널에서 확인해 주세요.</p>
+    ${liveSignalBoard(view)}
+    <section class="panel unavailable-journey" role="status"><h2>당일 이동 계획을 다시 확인해 주세요</h2><p>${escapeHtml(view.railPlan.reason || "도착 이후 탑승과 환승 조건을 만족하는 열차가 없습니다. 다음 날 이동이나 다른 교통편을 공식 채널에서 확인해 주세요.")}</p>
     <div class="hero-actions"><button class="button button-primary" id="open-journey-setup" type="button">항공편·여행조건 바꾸기</button><a class="button button-soft" href="https://www.letskorail.com/" target="_blank" rel="noreferrer">공식 시간표 확인</a></div></section>`;
 }
 
@@ -652,6 +659,14 @@ function render(options = {}) {
               <label><span>KTX·코레일 표 종류</span><select id="journey-ticket-type">${TICKET_TYPES.map((type) => `<option value="${type.id}" ${state.journey.ticket?.ticketType === type.id ? "selected" : ""}>${type.label}</option>`).join("")}</select></label>
               <label><span>공항철도 표 종류</span><select id="journey-arex-type"><option value="direct" ${state.journey.ticket?.arexType !== "general" ? "selected" : ""}>직통열차 승차권</option><option value="general" ${state.journey.ticket?.arexType === "general" ? "selected" : ""}>일반열차·교통카드</option></select></label>
             </div>
+            <div class="setup-grid">
+              ${[["korail", "KTX·코레일"], ["arex", "공항철도"]].map(([operator, label]) => {
+                const booking = state.journey.ticket?.bookings?.[operator];
+                const departure = booking?.departure ? new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(booking.departure)).replace(" ", "T") : "";
+                return `<label><span>예매한 ${label} 열차명 (선택)</span><input id="booked-${operator}-service" value="${escapeHtml(booking?.service || "")}" maxlength="40" placeholder="승차권의 열차명" /></label><label><span>예매한 ${label} 출발일시 (한국 시각)</span><input id="booked-${operator}-departure" type="datetime-local" value="${departure}" /></label>`;
+              }).join("")}
+            </div>
+            <p>예매편을 모르면 비워 두세요. 열차명과 출발일시가 확인된 표에만 시간별 반환 안내를 제공합니다.</p>
             <p>표 종류에 따라 반환 마감과 부담이 달라요. 최종 금액은 각 운영사 공식 채널에서 확인합니다.</p>
           </div>
         </fieldset>
@@ -770,6 +785,7 @@ function bindEvents(view) {
       probabilityPercent: displayedProbability(view, view.recovery)
     });
     saveConfirmedJourney(window.sessionStorage, state.confirmedJourney);
+    saveJourneySession(window.sessionStorage, state);
     state.activeView = "journey";
     window.history.replaceState(null, "", "#journey");
     resetAiGuidance();
@@ -820,6 +836,7 @@ function setScenario(scenarioId) {
   state.previewDelayMinutes = disruptionPresets[state.scenarioId].flightDelayMinutes;
   state.customDelayActive = false;
   clearConfirmedSelection();
+  saveJourneySession(window.sessionStorage, state);
   resetAiGuidance();
   render();
   const view = getViewModel();
@@ -831,6 +848,7 @@ function setPreviewDelay(minutes) {
   state.previewDelayMinutes = nextDelay;
   state.customDelayActive = true;
   clearConfirmedSelection();
+  saveJourneySession(window.sessionStorage, state);
   resetAiGuidance();
   render({ focusSelector: "#journey-time-scrubber" });
   const view = getViewModel();
@@ -1061,6 +1079,21 @@ async function applyJourneySetup(event) {
     return;
   }
 
+  const bookings = {};
+  for (const [operator, enabled] of [["korail", hasKorailTicket], ["arex", hasArexTicket]]) {
+    if (!hasBookedTicket || !enabled) continue;
+    const service = document.querySelector(`#booked-${operator}-service`)?.value?.trim() || "";
+    const departure = document.querySelector(`#booked-${operator}-departure`)?.value || "";
+    if (!service && !departure) continue;
+    const booking = normalizeBookedLeg({ service, departure: fromDateTimeLocalValue(departure, "") });
+    if (!booking) {
+      announce("예매한 열차명과 출발일시를 함께 입력하거나 두 칸을 모두 비워 주세요.");
+      document.querySelector(`#booked-${operator}-${service ? "departure" : "service"}`)?.focus();
+      return;
+    }
+    bookings[operator] = booking;
+  }
+
   state.journey = {
     ...state.journey,
     flightId,
@@ -1072,6 +1105,7 @@ async function applyJourneySetup(event) {
     largeLuggage: Boolean(document.querySelector("#journey-large-luggage")?.checked),
     ticket: {
       hasBookedTicket,
+      bookings,
       korail: hasKorailTicket,
       arex: hasArexTicket,
       ticketType: document.querySelector("#journey-ticket-type")?.value || "standard",
@@ -1082,6 +1116,7 @@ async function applyJourneySetup(event) {
   state.previewDelayMinutes = 0;
   state.customDelayActive = false;
   clearConfirmedSelection();
+  saveJourneySession(window.sessionStorage, state);
   state.fusion = null;
   state.signals = null;
   state.fusionLoading = true;
@@ -1251,16 +1286,11 @@ async function loadValidationStatus(options = {}) {
     state.validationStatus = await response.json();
     state.pilotStatus = await pilotResponse.json();
     if (options.refreshSession !== false && state.validationSession?.token) {
-      const sessionResponse = await fetch("/api/validation/session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: state.validationSession.token })
-      });
-      if (sessionResponse.ok) {
-        const payload = await sessionResponse.json();
-        saveValidationSession(state.validationSession.token, payload.session);
-      } else {
-        saveValidationSession(null, null);
+      const previous = state.validationSession;
+      const refreshed = await refreshValidationSession(previous);
+      if (state.validationSession?.token === previous.token) {
+        if (refreshed.stored !== previous) saveValidationSession(refreshed.stored?.token, refreshed.stored?.session);
+        state.validationError = refreshed.warning;
       }
     }
   } catch {

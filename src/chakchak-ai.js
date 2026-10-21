@@ -3,6 +3,7 @@ import { chakchakConnectionModel } from "./chakchak-model-data.js";
 import { simulateConnection } from "./engine.js";
 import { predictMonotonicQuantileGbdt } from "./monotonic-gbdt.js";
 import { CHAKCHAK_CONSTRAINT_POLICY, optimizeConstrainedJourney } from "./journey-optimizer.js";
+import { assertJourneyWorkload } from "./computation-limits.js";
 
 const MINUTE_MS = 60_000;
 const SAFE_PROBABILITY = 0.85;
@@ -87,7 +88,7 @@ export function predictChakchakJourney(input) {
   if (!input || !Array.isArray(input.candidates) || input.candidates.length === 0) {
     throw new TypeError("착착 AI 후보 열차가 필요합니다.");
   }
-  if (input.candidates.length > 12) throw new RangeError("후보 열차는 최대 12개입니다.");
+  assertJourneyWorkload(input.candidates, input.activities || input.tourismPlan?.activities || []);
   const scheduledArrivalMs = parseDate(input.scheduledArrival, "scheduledArrival");
   const candidates = input.candidates
     .map((candidate) => {
