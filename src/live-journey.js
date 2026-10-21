@@ -131,10 +131,14 @@ export function deriveJourneySignals(fusion, fallbackArrival) {
     ? clamp(immigrationTotal / Math.max(420, immigrationRows.length * 55), 0, 2)
     : 0;
 
-  const precipitationProbability = Number(weather?.precipitationProbability || 0);
+  const precipitationProbability = Number.isFinite(weather?.precipitationProbability) ? weather.precipitationProbability : null;
+  const precipitationMm = Number.isFinite(weather?.precipitationMm) ? weather.precipitationMm : null;
   const windSpeedKmh = Number(weather?.windSpeedKmh || 0);
+  // A provider without probabilities still reports rain. Use a conservative
+  // wet-weather signal, while keeping the missing probability explicit in UI.
+  const rainSeverity = precipitationProbability !== null ? precipitationProbability / 85 : precipitationMm > 0 ? 1 : 0;
   const weatherSeverity = weather
-    ? clamp(precipitationProbability / 85 + Math.max(0, windSpeedKmh - 22) / 28, 0, 2)
+    ? clamp(rainSeverity + Math.max(0, windSpeedKmh - 22) / 28, 0, 2)
     : 0;
   const averageRailDelayMinutes = railDelayMinutes(railRows);
 
@@ -157,7 +161,8 @@ export function deriveJourneySignals(fusion, fallbackArrival) {
     busiestHall,
     immigrationSeverity,
     precipitationProbability,
-    precipitationMm: Number(weather?.precipitationMm || 0),
+    precipitationMm,
+    precipitationPeriodHours: weather?.precipitationPeriodHours || 1,
     windSpeedKmh,
     weatherSeverity,
     averageRailDelayMinutes,

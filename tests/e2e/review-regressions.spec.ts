@@ -8,6 +8,27 @@ test.beforeEach(async ({ page }) => {
   await page.route("**/api/data/fusion?**", route => route.fulfill({ json: liveFusionFor(new URL(route.request().url()).searchParams.get("at") || undefined) }));
 });
 
+test("대체 기상 예보는 누락된 확률을 0%로 표시하지 않고 출처를 밝힌다", async ({ page }) => {
+  await page.route("**/api/data/fusion?**", route => {
+    const payload = liveFusionFor(new URL(route.request().url()).searchParams.get("at") || undefined);
+    return route.fulfill({ json: { ...payload, sources: [...payload.sources, {
+      id: "open-weather", mode: "live", provider: "met-norway", owner: "노르웨이 기상청(MET Norway)",
+      name: "인천공항 기상 예보", summary: "MET Norway 제공(CC BY 4.0), 단위 변환 적용. 강수확률은 제공되지 않아요.",
+      officialUrl: "https://api.met.no/doc/Locationforecast", licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
+      data: { precipitationProbability: null, precipitationMm: 1.2, precipitationPeriodHours: 6, windSpeedKmh: 18 }
+    }] } });
+  });
+  await page.goto("/?mode=live");
+  const weather = page.locator(".signal-board li").filter({ hasText: "공항 날씨" });
+  await expect(weather).toContainText("1.2mm");
+  await expect(weather).toContainText("6시간 강수량");
+  await expect(weather).toContainText("확률 미제공");
+  await expect(weather).not.toContainText("0%");
+  await page.getByRole("button", { name: "서비스 안내", exact: true }).click();
+  await expect(page.getByText("노르웨이 기상청(MET Norway)", { exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "데이터 이용허락(CC BY 4.0)" })).toHaveAttribute("href", "https://creativecommons.org/licenses/by/4.0/");
+});
+
 test("막차 이후에는 추천과 저장 대신 연결 불가 상태가 나온다", async ({ page }) => {
   await page.clock.setFixedTime(new Date("2030-09-05T14:00:00Z"));
   await page.goto("/?mode=live");

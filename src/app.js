@@ -404,7 +404,8 @@ function sourceItems() {
       live: "최신 정보",
       fallback: "자동 보완",
       demo: "연결 준비",
-      empty: "조회값 없음"
+      empty: "조회값 없음",
+      unavailable: "조회값 없음"
     };
     return state.fusion.sources
       .map((source, index) => {
@@ -418,6 +419,7 @@ function sourceItems() {
               <div class="source-copy-head"><strong>${escapeHtml(source.owner)}</strong><span class="source-mode mode-${escapeHtml(displayMode)}">${modeLabels[displayMode] || "확인 중"}</span></div>
               <span>${escapeHtml(source.name)} · ${escapeHtml(source.summary)}</span>
               <a class="source-link" href="${escapeHtml(source.officialUrl)}" target="_blank" rel="noreferrer">공식 출처 보기</a>
+              ${source.licenseUrl ? `<a class="source-link" href="${escapeHtml(source.licenseUrl)}" target="_blank" rel="noreferrer">데이터 이용허락(CC BY 4.0)</a>` : ""}
             </div>
           </li>`;
       })

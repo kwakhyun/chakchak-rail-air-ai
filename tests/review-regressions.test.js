@@ -28,7 +28,7 @@ test("cache distinguishes arrival hours; unavailable weather is not a zero obser
   const second = await buildDataFusion({ flightId: "TEST1", targetDateTime: "2030-09-05T23:00:00+09:00" }, options);
   assert.equal(first.sources.at(-1).data.precipitationProbability, 0);
   assert.equal(second.sources.at(-1).data.precipitationProbability, 95);
-  assert.equal(calls, 2);
+  assert.equal(calls, 1); // One forecast contains both hours; select after caching.
   const cached = await buildDataFusion({ flightId: "TEST1", targetDateTime: "2030-09-05T23:00:00+09:00" }, options);
   assert.equal(cached.cache.hit, true);
   const outside = await buildDataFusion({ flightId: "TEST1", targetDateTime: "2031-01-01T23:00:00+09:00" }, options);

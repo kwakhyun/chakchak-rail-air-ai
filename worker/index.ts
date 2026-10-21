@@ -138,7 +138,10 @@ async function api(request: Request, env: Env, url: URL): Promise<Response | nul
     if (!rate.allowed) return rateLimited(rate.retryAfterSeconds);
     const flightId = (url.searchParams.get("flight") || "KE704").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8);
     const targetDateTime = url.searchParams.get("at")?.slice(0, 40) || undefined;
-    return json(await buildDataFusion({ flightId, targetDateTime }, { env: env as any }));
+    return json(await buildDataFusion({ flightId, targetDateTime }, {
+      env: env as any,
+      upstreamCache: { storage: (globalThis as any).caches?.default, origin: url.origin }
+    }));
   }
 
   if (url.pathname === "/api/chakchak/predict") {
